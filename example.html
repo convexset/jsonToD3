@@ -1,0 +1,175 @@
+<HTML>
+<META CHARSET="utf-8">
+
+<HEAD>
+
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
+
+<script type="text/javascript" src="jsonToD3.js"></script>	
+
+<script type="text/javascript">
+var chartArray = null
+function init() {
+	chartArray = jsonToD3.work();
+
+	var head = document.getElementsByTagName("head")[0]
+	var script = document.createElement("script")
+	script.type = "text/x-mathjax-config";
+	script[(window.opera ? "innerHTML" : "text")] =
+		"MathJax.Hub.Config({\n" +
+		"	extensions: [\"tex2jax.js\"],\n" +
+		"	jax: [\"input/TeX\", \"output/HTML-CSS\"],\n" +
+		"	tex2jax: {\n" +
+		"		inlineMath: [['$','$'], ['\\\\(','\\\\)']],\n" +
+		"		displayMath: [ ['$$','$$'], ['\\\\[','\\\\]']],\n" +
+		"		processEscapes: true\n" +
+		"	},\n" +
+		" 	\"messageStyle\": \"none\",\n" +
+		" 	\"HTML-CSS\": { availableFonts: [\"TeX\"] }\n" +
+		"});"
+	head.appendChild(script);
+	script = document.createElement("script");
+		script.type = "text/javascript";
+		script.src  = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+	head.appendChild(script);
+}
+</script>	
+
+</HEAD>
+<BODY onLoad="init()">
+
+
+<DIV ALIGN=CENTER>
+<SCATTERPLOT>
+{
+	"dimensions" : {"width": 800, "height": 400},
+	"margins" : {"top": 20, "right": 25, "bottom": 40, "left": 60},
+	"x_label": "yWhat??? x ($\\chi$) Zzygzz",
+	"y_label": "y ($\\upsilon$)",
+	"show_legend": true,
+	"tooltip_color": "#F00",
+
+	"title": "Charty the SCATTERPLOT ($\\sigma$)",
+	"title_font" : "italic bold 16px Times New Roman",
+	"title_underline" : false,
+
+	"axes_font" : "12px sans-serif",
+	"axes_label_font" : "bold 12px sans-serif",
+	"legend_font" : "12px sans-serif",
+
+	"data_series" : [
+		{
+			"series_name": "Series $\\rho$ (Oh no! Heresy!)",
+			"marker_opacity": 0.6,
+			"marker_radius": 10,
+			"data": [
+				[2000, 50000, "$\\alpha^{\\omega}$"], [2001, 49000, "$\\epsilon\\rightarrow 0$"], [2002, 47500, "${1}/{\\sqrt{n}}$"], [2004, 39750, "Yummy $\\pi$"]
+			]
+		},
+		{
+			"series_name": "Series B",
+			"draw_line": false,
+			"data": [
+				[2000, 30000], [2001, 20000], [2002.5, 23500, "Woo Hoo!!"], [2002.75, 24500], [2003.5, 30750]
+			]
+		}
+	]
+}
+</SCATTERPLOT>	
+</DIV>
+
+<HR/>
+
+<DIV ALIGN=CENTER>
+<SCATTERPLOT>
+{
+	"dimensions" : {"width": 800, "height": 400},
+	"margins" : {"top": 20, "right": 30, "bottom": 40, "left": 60},
+	"has_datetime_x_axis" : true,
+	"datetime_x_axis_format" : "%b %Y",
+	"tooltip_significant_figures" : 4,
+	"tooltip_font" : "10px Times New Roman",
+
+	"title": "Some SCATTERPLOT",
+	"x_label": "Date",
+	"y_label": "Something",
+
+	"marker_opacity": 1,
+	"marker_radius": 5,
+	"marker_border": "#000",
+	"line_width": 5,
+
+	"data_series" : [
+		{
+			"series_name": "Series A",
+			"line_opacity": 0.3,
+			"data": [
+				["Jan 2014", 50023], ["Mar 2014", 49080], ["Jul 2014", 47500], ["Oct 2014", 39750]
+			]
+		},
+		{
+			"series_name": "Series B",
+			"use_markers": false,
+			"data": [
+				["Jan 2014", 30202], ["Mar 2014", 35099], ["Jul 2014", 27500], ["Oct 2014", 29750]
+			]
+		},
+		{
+			"series_name": "Series C",
+			"line_opacity": 0.7,
+			"marker_opacity": 1,
+			"data": [
+				["Jan 2014", 30102], ["15 Mar 2014", 34599], ["Jun 2014", 27300], ["Sep 2014", 31750]
+			]
+		}
+	]
+}
+</SCATTERPLOT>	
+</DIV>
+
+<HR/>
+
+<DIV ALIGN=CENTER>
+<BUBBLEPLOT>
+{
+	"title": "$\\Omega$-Bubbles",
+	"title_font" : "bold 20px Helvetica",
+
+	"x_label": "What??? x ($\\chi$) ZzzzzWhat??? x ($\\chi$) Zzzzz",
+	"y_label": "The Other Thing (y)",
+
+	"dimensions" : {"width": 800, "height": 400},
+	"margins" : {"top": 30, "right": 25, "bottom": 40, "left": 60},
+	"show_legend": true,
+	"bubble_scale": 30,
+	"marker_opacity": 0.7,
+	"data_series" : [
+		{
+			"series_name": "Series A",
+			"data": [
+				[2000, 44000, 1, "Opps..."],
+				[2001, 49000, 0.5, "I..."],
+				[2002, 47500, 0.25, "did..."],
+				[2003, 42500, 0.25, "it..."],
+				[2004, 45500, 0.5, "again..."]
+			]
+		},
+		{
+			"series_name": "Series B",
+			"data": [
+				[2001, 43000, 0.5, "Shine ($\\alpha$)"],
+				[2002, 42500, 0.25, "Bright ($\\alpha$)"],
+				[2003, 45500, 0.25, "Like ($\\alpha$)"],
+				[2003.5, 47500, 0.5, "A ($\\alpha$)"],
+				[2005, 43500, 0.5, "Diamond ($\\alpha$)"]
+			]
+		}
+	]
+}
+</BUBBLEPLOT>
+</DIV>
+
+
+
+</BODY>
+</HTML>
