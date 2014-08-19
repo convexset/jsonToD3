@@ -3,6 +3,7 @@
 
 <HEAD>
 
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
 <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
 
 <script type="text/javascript" src="jsonToD3.js"></script>	
@@ -38,28 +39,56 @@ function init() {
 </HEAD>
 <BODY onLoad="init()">
 
+<H1 ALIGN=CENTER>Various Examples for jsonToD3.js</H1>
+
+<HR/>
+
+<DIV ALIGN=CENTER>
+<SCATTERPLOT SRC="./examples/hdbRental_Aug2014.json"></SCATTERPLOT>	
+</DIV>
+
+<h3>The Chart</h3>
+Things are a bit cluttered. Try clicking on the legend to hide some series.<br><br>
+
+For details on the points, try hovering the mouse cursor over some of them.<br><br>
+
+Also note that data is being loaded from some other file in contrast to the later examples. (This should not be the first example, but it looks the most presentable. This list will be reorganized.)
+
+<h3>Code:</h3>
+<PRE style="background-color: #eee;">
+
+&lt;SCATTERPLOT SRC="./examples/hdbRental_Aug2014.json"&gt;&lt;/SCATTERPLOT&gt;
+
+</PRE>
+<HR/>
 
 <DIV ALIGN=CENTER>
 <SCATTERPLOT>
 {
 	"dimensions" : {"width": 800, "height": 400},
 	"margins" : {"top": 20, "right": 25, "bottom": 40, "left": 60},
-	"x_label": "yWhat??? x ($\\chi$) Zzygzz",
-	"y_label": "y ($\\upsilon$)",
+	"axes" : {
+		"x_label": "x (a.k.a. $\\chi$)",
+		"y_label": "Upsilon ($\\upsilon$)"
+	},
+
 	"show_legend": true,
+	"legend_offset_x": 0,
+	"legend_offset_y": 0,
+
 	"tooltip_color": "#F00",
 
 	"title": "Charty the SCATTERPLOT ($\\sigma$)",
-	"title_font" : "italic bold 16px Times New Roman",
+	"title_font" : "italic bold 20px Times New Roman",
 	"title_underline" : false,
 
 	"axes_font" : "12px sans-serif",
-	"axes_label_font" : "bold 12px sans-serif",
-	"legend_font" : "12px sans-serif",
+	"axes_label_font" : "bold 14px sans-serif",
+	"legend_font" : "20px sans-serif",
 
 	"data_series" : [
 		{
-			"series_name": "Series $\\rho$ (Oh no! Heresy!)",
+			"series_name": "Series $\\alpha$",
 			"marker_opacity": 0.6,
 			"marker_radius": 10,
 			"data": [
@@ -67,7 +96,7 @@ function init() {
 			]
 		},
 		{
-			"series_name": "Series B",
+			"series_name": "Series $\\beta$",
 			"draw_line": false,
 			"data": [
 				[2000, 30000], [2001, 20000], [2002.5, 23500, "Woo Hoo!!"], [2002.75, 24500], [2003.5, 30750]
@@ -78,26 +107,86 @@ function init() {
 </SCATTERPLOT>	
 </DIV>
 
+<h3>The Chart</h3>
+Note that MathJax has been used for typesetting math.<br><br>
+
+Confession: There is a bit of a "width of the DIV" issue, wherein some DIVs in the legend extend further that they should (at least they are not too narrow), causing the fade-in/out of a data series to trigger even when apparently clicking in space.
+
+<h3>Code:</h3>
+<PRE style="background-color: #eee;">
+
+&lt;SCATTERPLOT&gt;
+{
+	"dimensions" : {"width": 800, "height": 400},
+	"margins" : {"top": 20, "right": 25, "bottom": 40, "left": 60},
+	"axes" : {
+		"x_label": "x (a.k.a. $\\chi$)",
+		"y_label": "Upsilon ($\\upsilon$)"
+	},
+
+	"show_legend": true,
+	"legend_offset_x": 0,
+	"legend_offset_y": 0,
+
+	"tooltip_color": "#F00",
+
+	"title": "Charty the SCATTERPLOT ($\\sigma$)",
+	"title_font" : "italic bold 20px Times New Roman",
+	"title_underline" : false,
+
+	"axes_font" : "12px sans-serif",
+	"axes_label_font" : "bold 14px sans-serif",
+	"legend_font" : "20px sans-serif",
+
+	"data_series" : [
+		{
+			"series_name": "Series $\\alpha$",
+			"marker_opacity": 0.6,
+			"marker_radius": 10,
+			"data": [
+				[2000, 50000, "$\\alpha^{\\omega}$"], [2001, 49000, "$\\epsilon\\rightarrow 0$"], [2002, 47500, "${1}/{\\sqrt{n}}$"], [2004, 39750, "Yummy $\\pi$"]
+			]
+		},
+		{
+			"series_name": "Series $\\beta$",
+			"draw_line": false,
+			"data": [
+				[2000, 30000], [2001, 20000], [2002.5, 23500, "Woo Hoo!!"], [2002.75, 24500], [2003.5, 30750]
+			]
+		}
+	]
+}
+&lt;/SCATTERPLOT&gt;
+
+</PRE>
+
 <HR/>
 
 <DIV ALIGN=CENTER>
 <SCATTERPLOT>
 {
 	"dimensions" : {"width": 800, "height": 400},
-	"margins" : {"top": 20, "right": 30, "bottom": 40, "left": 60},
-	"has_datetime_x_axis" : true,
-	"datetime_x_axis_format" : "%b %Y",
-	"tooltip_significant_figures" : 4,
+	"margins" : {"top": 20, "right": 40, "bottom": 40, "left": 60},
 	"tooltip_font" : "10px Times New Roman",
 
-	"title": "Some SCATTERPLOT",
-	"x_label": "Date",
-	"y_label": "Something",
+	"title": "Some SCATTERPLOT (with shifted legend)",
+	"axes" : {
+		"x_label": "Date",
+		"y_label": "Something",
+		"has_datetime_x_axis" : true,
+		"x_axis_format" : "%B %Y",
+		"y_min": 20000,
+		"y_axis_format" : "$,g"
+	},
 
 	"marker_opacity": 1,
 	"marker_radius": 5,
 	"marker_border": "#000",
 	"line_width": 5,
+
+	"legend_offset_x": -625,
+	"legend_offset_y": -60,
+
 
 	"data_series" : [
 		{
@@ -127,16 +216,82 @@ function init() {
 </SCATTERPLOT>	
 </DIV>
 
+<h3>The Chart</h3>
+The legend can be shifted and the axes can be formatted (see <a href="https://github.com/mbostock/d3/wiki/Formatting" target=_blank>this</a> for more info). No biggie.
+
+<h3>Code:</h3>
+<PRE style="background-color: #eee;">
+
+&lt;SCATTERPLOT&gt;
+{
+	"dimensions" : {"width": 800, "height": 400},
+	"margins" : {"top": 20, "right": 40, "bottom": 40, "left": 60},
+	"tooltip_font" : "10px Times New Roman",
+
+	"title": "Some SCATTERPLOT (with shifted legend)",
+	"axes" : {
+		"x_label": "Date",
+		"y_label": "Something",
+		"has_datetime_x_axis" : true,
+		"x_axis_format" : "%B %Y",
+		"y_min": 20000,
+		"y_axis_format" : "$,g"
+	},
+
+	"marker_opacity": 1,
+	"marker_radius": 5,
+	"marker_border": "#000",
+	"line_width": 5,
+
+	"legend_offset_x": -625,
+	"legend_offset_y": -60,
+
+
+	"data_series" : [
+		{
+			"series_name": "Series A",
+			"line_opacity": 0.3,
+			"data": [
+				["Jan 2014", 50023], ["Mar 2014", 49080], ["Jul 2014", 47500], ["Oct 2014", 39750]
+			]
+		},
+		{
+			"series_name": "Series B",
+			"use_markers": false,
+			"data": [
+				["Jan 2014", 30202], ["Mar 2014", 35099], ["Jul 2014", 27500], ["Oct 2014", 29750]
+			]
+		},
+		{
+			"series_name": "Series C",
+			"line_opacity": 0.7,
+			"marker_opacity": 1,
+			"data": [
+				["Jan 2014", 30102], ["15 Mar 2014", 34599], ["Jun 2014", 27300], ["Sep 2014", 31750]
+			]
+		}
+	]
+}
+&lt;/SCATTERPLOT&gt;
+
+</PRE>
+
 <HR/>
 
 <DIV ALIGN=CENTER>
 <BUBBLEPLOT>
 {
-	"title": "$\\Omega$-Bubbles",
+	"title": "$\\Omega$-Bubbles (Tweaking the Axis Tick Counts Approximately)",
 	"title_font" : "bold 20px Helvetica",
 
-	"x_label": "What??? x ($\\chi$) ZzzzzWhat??? x ($\\chi$) Zzzzz",
-	"y_label": "The Other Thing (y)",
+	"axes" : {
+		"x_label": "Some Covariate",
+		"y_label": "Population?",
+		"y_min": 40000,
+		"y_max": 50000,
+		"x_ticks": 6,
+		"y_ticks": 18
+	},
 
 	"dimensions" : {"width": 800, "height": 400},
 	"margins" : {"top": 30, "right": 25, "bottom": 40, "left": 60},
@@ -169,7 +324,58 @@ function init() {
 </BUBBLEPLOT>
 </DIV>
 
+<h3>The Chart</h3>
+Bubble plots... yay?
 
+<h3>Code:</h3>
+<PRE style="background-color: #eee;">
+
+&lt;BUBBLEPLOT&gt;
+{
+	"title": "$\\Omega$-Bubbles (Tweaking the Axis Tick Counts Approximately)",
+	"title_font" : "bold 20px Helvetica",
+
+	"axes" : {
+		"x_label": "Some Covariate",
+		"y_label": "Population?",
+		"y_min": 40000,
+		"y_max": 50000,
+		"x_ticks": 6,
+		"y_ticks": 18
+	},
+
+	"dimensions" : {"width": 800, "height": 400},
+	"margins" : {"top": 30, "right": 25, "bottom": 40, "left": 60},
+	"show_legend": true,
+	"bubble_scale": 30,
+	"marker_opacity": 0.7,
+	"data_series" : [
+		{
+			"series_name": "Series A",
+			"data": [
+				[2000, 44000, 1, "Opps..."],
+				[2001, 49000, 0.5, "I..."],
+				[2002, 47500, 0.25, "did..."],
+				[2003, 42500, 0.25, "it..."],
+				[2004, 45500, 0.5, "again..."]
+			]
+		},
+		{
+			"series_name": "Series B",
+			"data": [
+				[2001, 43000, 0.5, "Shine ($\\alpha$)"],
+				[2002, 42500, 0.25, "Bright ($\\alpha$)"],
+				[2003, 45500, 0.25, "Like ($\\alpha$)"],
+				[2003.5, 47500, 0.5, "A ($\\alpha$)"],
+				[2005, 43500, 0.5, "Diamond ($\\alpha$)"]
+			]
+		}
+	]
+}
+&lt;/BUBBLEPLOT&gt;
+
+</PRE>
+<HR/>
 
 </BODY>
 </HTML>

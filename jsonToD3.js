@@ -1,31 +1,87 @@
-/* TO DO
-
-- Refactor: JSON to Chart function
-- Font size nonsense
-- Documentation
-
+/*
+TO DO:
+- legend background and div sizes after MathJax (for the onClick)
+- tickValues
 */
 
 var jsonToD3 = {
-	parseTag: function(plotTag) {
-		var json = plotTag.innerHTML
-		plotTag.innerHTML = ''
+	valid_plot_tags: ["SCATTERPLOT", "BUBBLEPLOT"],
 
+	parseTextAsRawJSON: function(s) {
 		var chart_info = null
 		try {
-			chart_info = JSON.parse(json);
-			chart_info.plot_type = plotTag.tagName.toUpperCase()
+			chart_info = JSON.parse(s)
 		} catch (error) {
-			plotTag.setAttribute('error', error)
+			// Rethrow...
+			console.log("Parsing raw JSON failed.")
 			chart_info = null
 			throw error
 		}
+		return chart_info
+	},
 
+	parseTagGetRawJSON: function(plotTag) {
+		var external_data_source = plotTag.getAttribute("src")
+
+		var json = null
+		if (external_data_source == null) {			
+			json = plotTag.innerHTML
+		} else {
+			var getType = {}
+			if ((!("jQuery" in window)) || (!(jQuery.ajax != null)) || (!(getType.toString.call(jQuery.ajax) === '[object Function]'))) {
+				throw "Need jQuery.ajax in order to load code by SRC=\"...\""
+			}
+			jQuery.ajax({
+						url: "examples/hdbRental_Aug2014.json",
+						success: function(data){ json = data },
+						async: false,
+						dataType: "text"
+			})
+		}
+		plotTag.innerHTML = ''
+
+		var chart_info = jsonToD3.parseTextAsRawJSON(json)
+		if (chart_info != null) {
+			chart_info.plot_type = plotTag.tagName.toUpperCase()
+		}
+		
 		return chart_info
 	},
 
 	slugify: function(s) {
-		return s.toString().toLowerCase().replace(/[^a-z,0-9,_]/g, '')
+		return s.toString().toLowerCase().replace(/[^a-z,0-9]/g, '')
+	},
+
+	get_series_key: function(unique_tag, s) {
+		return unique_tag + "|" + jsonToD3.slugify(s)
+	},
+
+	get_node_tag: function(unique_tag, s) {
+		return 'tag_' + unique_tag + '_node_' + jsonToD3.slugify(s)
+	},
+
+	get_path_tag: function(unique_tag, s) {
+		return 'tag_' + unique_tag + '_path_' + jsonToD3.slugify(s)
+	},
+
+	get_legend_tag: function(unique_tag, s) {
+		return 'tag_' + unique_tag + '_legend_' + jsonToD3.slugify(s)
+	},
+
+	map: function(fn, arr) {
+		var mapped_arr = []
+		for (var i = 0; i < arr.length; i++) {
+			mapped_arr.push(fn(arr[i]))
+		}
+		return mapped_arr
+	},
+
+	reduce: function(fn, arr, z_start) {
+		var z = z_start
+		for (var i = 0; i < arr.length; i++) {
+			z = fn(z, arr[i])
+		}
+		return z
 	},
 
 	matchRGB: function(s) {
@@ -33,11 +89,6 @@ var jsonToD3 = {
 		var rgbRegEx2 = /^#[0-9,A-F,a-f]{3}$/
 		
 		return rgbRegEx1.test(s) || rgbRegEx2.test(s) 
-	},
-
-	roundToSFs: function(n, sf) {
-	    var mult = Math.pow(10, sf - Math.floor(Math.log(n) / Math.LN10) - 1);
-	    return Math.round(n * mult) / mult;
 	},
 
 	validatePointPlotSettings: function(info, plot_type, location, parent) {
@@ -92,7 +143,7 @@ var jsonToD3 = {
 
 
 		////////////////////////////////////////////////////////////////
-		// Markers
+		// Lines
 		////////////////////////////////////////////////////////////////
 
 		var DEFAULT_LINE_OPACITY = 1
@@ -127,7 +178,7 @@ var jsonToD3 = {
 		if (info.draw_line != null) {
 			info.draw_line = true && info.draw_line
 		} else {
-			info.draw_line = true
+			info.draw_line = (parent != null) ? parent.draw_line : true
 		}
 
 		////////////////////////////////////////////////////////////////
@@ -174,42 +225,146 @@ var jsonToD3 = {
 		if ((!isFinite(chart_info.dimensions.width)) || (chart_info.dimensions.width <= 0)) { errors.push("Invalid dimensions.width in chart definition.") }
 		if ((!isFinite(chart_info.dimensions.height)) || (chart_info.dimensions.height <= 0)) { errors.push("Invalid dimensions.height in chart definition.") }
 
-		if ((chart_info.has_datetime_x_axis != null) && (chart_info.has_datetime_x_axis)) {
-			chart_info.has_datetime_x_axis = true
-			if (chart_info.datetime_x_axis_format != null) {
-				chart_info.datetime_x_axis_format = chart_info.datetime_x_axis_format.toString()
+		if (chart_info.axes == null) {
+			chart_info.axes = {}
+		}
+		if ((chart_info.axes.has_datetime_x_axis != null) && (chart_info.axes.has_datetime_x_axis)) {
+			chart_info.axes.has_datetime_x_axis = true
+		} else {
+			chart_info.axes.has_datetime_x_axis = false
+			chart_info.axes.x_axis_format = ""
+		}
+		if ((chart_info.axes.has_datetime_y_axis != null) && (chart_info.axes.has_datetime_y_axis)) {
+			chart_info.axes.has_datetime_y_axis = true
+		} else {
+			chart_info.axes.has_datetime_y_axis = false
+		}
+
+		if (chart_info.axes.x_axis_format != null) {
+			chart_info.axes.x_axis_format = chart_info.axes.x_axis_format.toString()
+		} else {
+			chart_info.axes.x_axis_format = ""
+		}
+		if (chart_info.axes.y_axis_format != null) {
+			chart_info.axes.y_axis_format = chart_info.axes.y_axis_format.toString()
+		} else {
+			chart_info.axes.y_axis_format = ""
+		}
+
+		if (chart_info.axes.x_label != null) {
+			chart_info.axes.x_label = chart_info.axes.x_label.toString()
+		} else {
+			chart_info.axes.x_label = ""
+		}
+		if (chart_info.axes.y_label != null) {
+			chart_info.axes.y_label = chart_info.axes.y_label.toString()
+		} else {
+			chart_info.axes.y_label = ""
+		}
+
+		if (chart_info.axes.x_min != null) {
+			chart_info.axes.x_min = chart_info.axes.x_min.toString()
+			if (chart_info.axes.has_datetime_x_axis) {
+				chart_info.axes.x_min = new Date(Date.parse(chart_info.axes.x_min))
 			} else {
-				chart_info.datetime_x_axis_format = "" // "%Y-%m-%d"
+				chart_info.axes.x_min = parseFloat(chart_info.axes.x_min)
 			}
+			if (isNaN(chart_info.axes.x_min)) {
+				errors.push("Error parsing axes.x_min")
+				chart_info.axes.x_min = null
+			} 			
 		} else {
-			chart_info.has_datetime_x_axis = false
-			chart_info.datetime_x_axis_format = ""
+			chart_info.axes.x_min = null
 		}
-
-		if ((chart_info.has_datetime_y_axis != null) && (chart_info.has_datetime_y_axis)) {
-			chart_info.has_datetime_y_axis = true
-			if (chart_info.datetime_y_axis_format != null) {
-				chart_info.datetime_y_axis_format = chart_info.datetime_y_axis_format.toString()
+		if (chart_info.axes.x_max != null) {
+			chart_info.axes.x_max = chart_info.axes.x_max.toString()
+			if (chart_info.axes.has_datetime_x_axis) {
+				chart_info.axes.x_max = new Date(Date.parse(chart_info.axes.x_max))
 			} else {
-				chart_info.datetime_y_axis_format = "" // "%Y-%m-%d"
+				chart_info.axes.x_max = parseFloat(chart_info.axes.x_max)
 			}
+			if (isNaN(chart_info.axes.x_max)) {
+				errors.push("Error parsing axes.x_max")
+				chart_info.axes.x_max = null
+			} 			
 		} else {
-			chart_info.has_datetime_y_axis = false
-			chart_info.datetime_y_axis_format = ""
+			chart_info.axes.x_max = null
 		}
 
-		if (chart_info.x_label != null) {
-			chart_info.x_label = chart_info.x_label.toString()
+		if (chart_info.axes.y_min != null) {
+			chart_info.axes.y_min = chart_info.axes.y_min.toString()
+			if (chart_info.axes.has_datetime_y_axis) {
+				chart_info.axes.y_min = new Date(Date.parse(chart_info.axes.y_min))
+			} else {
+				chart_info.axes.y_min = parseFloat(chart_info.axes.y_min)
+			}
+			if (isNaN(chart_info.axes.y_min)) {
+				errors.push("Error parsing axes.y_min")
+				chart_info.axes.y_min = null
+			} 			
 		} else {
-			chart_info.x_label = ""
+			chart_info.axes.y_min = null
+		}
+		if (chart_info.axes.y_max != null) {
+			chart_info.axes.y_max = chart_info.axes.y_max.toString()
+			if (chart_info.axes.has_datetime_y_axis) {
+				chart_info.axes.y_max = new Date(Date.parse(chart_info.axes.y_max))
+			} else {
+				chart_info.axes.y_max = parseFloat(chart_info.axes.y_max)
+			}
+			if (isNaN(chart_info.axes.y_max)) {
+				errors.push("Error parsing axes.y_max")
+				chart_info.axes.y_max = null
+			} 			
+		} else {
+			chart_info.axes.y_max = null
 		}
 
-		if (chart_info.y_label != null) {
-			chart_info.y_label = chart_info.y_label.toString()
+		if (chart_info.axes.x_ticks != null) {
+			chart_info.axes.x_ticks = parseInt(chart_info.axes.x_ticks)
+			if (isNaN(chart_info.axes.x_ticks)) {
+				errors.push("Error parsing axes.x_ticks")
+				chart_info.axes.x_ticks = null
+			} 			
 		} else {
-			chart_info.y_label = ""
+			chart_info.axes.x_ticks = null
+		}
+		if (chart_info.axes.x_ticks < 2) {
+			chart_info.axes.x_ticks = null
 		}
 
+		if (chart_info.axes.y_ticks != null) {
+			chart_info.axes.y_ticks = parseInt(chart_info.axes.y_ticks)
+			if (isNaN(chart_info.axes.y_ticks)) {
+				errors.push("Error parsing axes.y_ticks")
+				chart_info.axes.y_ticks = null
+			} 			
+		} else {
+			chart_info.axes.y_ticks = null
+		}
+		if (chart_info.axes.y_ticks < 2) {
+			chart_info.axes.y_ticks = null
+		}
+
+		if (chart_info.legend_offset_x != null) {
+			chart_info.legend_offset_x = parseFloat(chart_info.legend_offset_x)
+			if (isNaN(chart_info.legend_offset_x)) {
+				errors.push("Error parsing legend_offset_x")
+				chart_info.legend_offset_x = 0
+			} 			
+		} else {
+			chart_info.legend_offset_x = 0
+		}
+
+		if (chart_info.legend_offset_y != null) {
+			chart_info.legend_offset_y = -parseFloat(chart_info.legend_offset_y)
+			if (isNaN(chart_info.legend_offset_y)) {
+				errors.push("Error parsing legend_offset_y")
+				chart_info.legend_offset_y = 0
+			} 			
+		} else {
+			chart_info.legend_offset_y = 0
+		}
 
 		if (chart_info.show_legend != null) {
 			chart_info.show_legend = true && chart_info.show_legend
@@ -227,15 +382,6 @@ var jsonToD3 = {
 			chart_info.tooltip_font = chart_info.tooltip_font.toString()
 		} else {
 			chart_info.tooltip_font = "11px Sans Serif"
-		}
-
-		if (chart_info.tooltip_significant_figures != null) {
-			chart_info.tooltip_significant_figures = parseInt(chart_info.tooltip_significant_figures.toString())
-			if (isNaN(chart_info.tooltip_significant_figures)) {
-				errors.push("Error parsing tooltip_significant_figures in chart definition.")
-			}
-		} else {
-			chart_info.tooltip_significant_figures = -1
 		}
 
 
@@ -436,7 +582,7 @@ var jsonToD3 = {
 			if (ds.data == null) { errors.push("Error: data not defined in series \"" + ds.series_name + "\".") }
 			if (ds.data.length == null) { errors.push("Invalid data in series \"" + ds.series_name + "\".") }
 
-			var data_description = jsonToD3.checkAndParsePointsAndLabel(ds, chart_info.plot_type, chart_info.has_datetime_x_axis, chart_info.has_datetime_y_axis)
+			var data_description = jsonToD3.checkAndParsePointsAndLabel(ds, chart_info.plot_type, chart_info.axes.has_datetime_x_axis, chart_info.axes.has_datetime_y_axis)
 			if (data_description != null) {
 				ds.data_description = data_description
 
@@ -472,12 +618,15 @@ var jsonToD3 = {
 		}
 	},
 
-	makeChartCanvas: function(plotTag) {
-		var chart_info = jsonToD3.parseTag(plotTag)
-
-		if (chart_info == null) { return null }
-		if (!jsonToD3.validateChartInfo(chart_info)) { return null }
-		if (!jsonToD3.validateSeriesInfo(chart_info)) { return null }
+	makeChartCanvas: function(plotTag, chart_info) {
+		if (chart_info == null) { throw "Expected: JSON object in chart_info (got: null)" }
+		if ((!jsonToD3.validateChartInfo(chart_info)) || (!jsonToD3.validateSeriesInfo(chart_info))) {
+			var msg = "Failed to validate data series."
+			console.log(msg)
+			console.log("plotTag", plotTag)
+			console.log("chart_info", chart_info)
+			throw msg 
+		}
 
 		plotTag.setAttribute('plottype', chart_info.plot_type)
 		// console.log(chart_info.plot_type, chart_info)
@@ -493,9 +642,9 @@ var jsonToD3 = {
 			var data_points = chart_info.all_data_points
 			var data_lines = chart_info.all_data_lines
 
-			var unique_tag = "CHARTAREA" + (++jsonToD3.plotIdx).toString()
+			var unique_tag = "JSON_TO_DTHREE_CHARTAREA" + (++jsonToD3.plotIdx).toString()
 			while (document.getElementsByTagName(unique_tag).length > 0) {
-				unique_tag = "CHARTAREA" + (++jsonToD3.plotIdx).toString()
+				unique_tag = "JSON_TO_DTHREE_CHARTAREA" + (++jsonToD3.plotIdx).toString()
 			}
 
 			// Setup canvas 
@@ -507,13 +656,29 @@ var jsonToD3 = {
 							.append("g")
 							.attr("transform", "translate(" + margins.left + "," + margins.top + ")")
 
+
+			// font size things...
+			var body = document.getElementsByTagName("BODY")[0]
+			var sneakyDiv = document.createElement("DIV")
+			sneakyDiv.setAttribute("id", "SneakyDiv")
+			body.appendChild(sneakyDiv)
+			var textHeight = 0
+			var textWidth = 0
+			var padding = 0
+
+			sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + ";")
+			sneakyDiv.innerHTML = "abcdefghijklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz".toUpperCase()
+			textHeight = sneakyDiv.clientHeight
+			textWidth = sneakyDiv.clientWidth
+
 			var tooltip = d3.select(unique_tag).append("div")
 								.attr("class", "tooltip")
 								.style("opacity", 0)
 								.style("position", "absolute")
-								.style("width", "200pn")
+								//.style("width", "200px")
 								//.style("height", "28px")
-								.style("height", "50px")
+								.style("width", Math.max(100, textWidth))
+								.style("height", Math.max(30, 4 + 5*textHeight))
 								.style("pointer-events", "none")
 								.style("text-align", "left")
 								.style("vertical-align", "top")
@@ -533,7 +698,8 @@ var jsonToD3 = {
 								.attr("y", -8)
 				//*/
 
-				title = d3.select(unique_tag).append("div")
+				title = svg.append("foreignObject")
+				                .append("xhtml:div")
 								.attr("class", "title")
 								.style("position", "absolute")
 								.style("width", inner_width)
@@ -543,20 +709,19 @@ var jsonToD3 = {
 								.style("vertical-align", "top")
 								.style("text-decoration", chart_info.title_underline ? "underline" : "none")
 								.html(chart_info.title)
-								.style("left", (inner_width / 2) + 'px')
-								.style("top", (svg[0][0].offsetParent.offsetTop) + 'px')
+								.style("left", svg[0][0].offsetLeft + margins.left)
+								.style("top", 0)
 			}
 
 
 			// Setup x 
 			var xValue = function(d) { return d.x }
 			var xValueTT = function(d) {
-				if (chart_info.has_datetime_x_axis && (chart_info.datetime_x_axis_format != "")) {
-					return d3.time.format(chart_info.datetime_x_axis_format)(d.x)
+				if (chart_info.axes.has_datetime_x_axis && (chart_info.axes.x_axis_format != "")) {
+					return d3.time.format(chart_info.axes.x_axis_format)(d.x)
 				} else {
-					if (chart_info.tooltip_significant_figures > 0) {
-						return jsonToD3.roundToSFs(d.x, chart_info.tooltip_significant_figures)
-						return d.x.toPrecision(chart_info.tooltip_significant_figures)
+					if (chart_info.axes.x_axis_format != "") {
+						return d3.format(chart_info.axes.x_axis_format)(d.x)
 					} else {
 						return d.x
 					}
@@ -564,15 +729,21 @@ var jsonToD3 = {
 			}
 			var xScale = null
 			var xAxis = null
-			if (!chart_info.has_datetime_x_axis) {
+			if (!chart_info.axes.has_datetime_x_axis) {
 				xScale = d3.scale.linear().rangeRound([0, inner_width])
 				xAxis = d3.svg.axis().scale(xScale).orient("bottom")
+				if (chart_info.axes.x_axis_format != "") {
+					xAxis.tickFormat(d3.format(chart_info.axes.x_axis_format))
+				}
 			} else {
 				xScale = d3.time.scale().rangeRound([0, inner_width])
 				xAxis = d3.svg.axis().scale(xScale).orient("bottom")
-				if (chart_info.datetime_x_axis_format != "") {
-					xAxis.tickFormat(d3.time.format(chart_info.datetime_x_axis_format))
+				if (chart_info.axes.x_axis_format != "") {
+					xAxis.tickFormat(d3.time.format(chart_info.axes.x_axis_format))
 				}
+			}
+			if (chart_info.axes.x_ticks != null) {
+				xAxis.ticks(chart_info.axes.x_ticks)
 			}
 			var xMap = function(d) { return xScale(xValue(d));}
 
@@ -580,12 +751,11 @@ var jsonToD3 = {
 			// Setup y
 			var yValue = function(d) { return d.y }
 			var yValueTT = function(d) {
-				if (chart_info.has_datetime_y_axis && (chart_info.datetime_y_axis_format != "")) {
-					return d3.time.format(chart_info.datetime_y_axis_format)(d.y)
+				if (chart_info.axes.has_datetime_y_axis && (chart_info.axes.y_axis_format != "")) {
+					return d3.time.format(chart_info.axes.y_axis_format)(d.y)
 				} else {
-					if (chart_info.tooltip_significant_figures > 0) {
-						return jsonToD3.roundToSFs(d.y, chart_info.tooltip_significant_figures)
-						return d.y.toPrecision(chart_info.tooltip_significant_figures)
+					if (chart_info.axes.y_axis_format != "") {
+						return d3.format(chart_info.axes.y_axis_format)(d.y)
 					} else {
 						return d.y
 					}
@@ -593,15 +763,21 @@ var jsonToD3 = {
 			}
 			var yScale = null
 			var yAxis = null
-			if (!chart_info.has_datetime_y_axis) {
+			if (!chart_info.axes.has_datetime_y_axis) {
 				yScale = d3.scale.linear().rangeRound([inner_height, 0])
 				yAxis = d3.svg.axis().scale(yScale).orient("left")
+				if (chart_info.axes.y_axis_format != "") {
+					yAxis.tickFormat(d3.format(chart_info.axes.y_axis_format))
+				}
 			} else {
 				yScale = d3.time.scale().rangeRound([inner_height, 0])
 				yAxis = d3.svg.axis().scale(yScale).orient("left")
-				if (chart_info.datetime_y_axis_format != "") {
-					yAxis.tickFormat(d3.time.format(chart_info.datetime_y_axis_format))
+				if (chart_info.axes.y_axis_format != "") {
+					yAxis.tickFormat(d3.time.format(chart_info.axes.y_axis_format))
 				}
+			}
+			if (chart_info.axes.y_ticks != null) {
+				yAxis.ticks(chart_info.axes.y_ticks)
 			}
 			var yMap = function(d) { return yScale(yValue(d));}
 
@@ -613,22 +789,39 @@ var jsonToD3 = {
 			var color = d3.scale.category10();
 
 			// axes scaling
-			var xBuffer = Math.max(1, chart_info.chart_data_description.x_max - chart_info.chart_data_description.x_min) * 0.025
-			var yBuffer = Math.max(1, chart_info.chart_data_description.y_max - chart_info.chart_data_description.y_min) * 0.025
-			//xScale.domain([chart_info.chart_data_description.x_min - xBuffer, chart_info.chart_data_description.x_max + xBuffer]);
-			//yScale.domain([chart_info.chart_data_description.y_min - yBuffer, chart_info.chart_data_description.y_max + yBuffer]);
-			xScale.domain([chart_info.chart_data_description.x_min, chart_info.chart_data_description.x_max]);
-			yScale.domain([chart_info.chart_data_description.y_min, chart_info.chart_data_description.y_max]);
+			var x_domain = [chart_info.chart_data_description.x_min, chart_info.chart_data_description.x_max]
+			var y_domain = [chart_info.chart_data_description.y_min, chart_info.chart_data_description.y_max]
+			if (chart_info.axes.x_min != null) { x_domain[0] = chart_info.axes.x_min }
+			if (chart_info.axes.x_max != null) { x_domain[1] = chart_info.axes.x_max }
+			if (chart_info.axes.y_min != null) { y_domain[0] = chart_info.axes.y_min }
+			if (chart_info.axes.y_max != null) { y_domain[1] = chart_info.axes.y_max }
+			xScale.domain(x_domain)
+			yScale.domain(y_domain)
 
+
+			sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.axes_label_font + ";")
+			sneakyDiv.innerHTML = "abcdefghijklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz".toUpperCase()
+			textHeight = sneakyDiv.clientHeight
+			textWidth = sneakyDiv.clientWidth
 
 			// x-axis
-			svg.append("g")
-					.attr("class", "x axis")
-					.attr("transform", "translate(0," + inner_height + ")")
-					.call(xAxis)
-					.style("fill", "#000") // X Tick Labels
-					.style("font", chart_info.axes_font)
-				.append("foreignObject")
+			var x_axis = svg.append("g")
+							.attr("class", "x axis")
+							.attr("transform", "translate(0," + inner_height + ")")
+							.call(xAxis)
+							.style("fill", "#000") // X Tick Labels
+							.style("font", chart_info.axes_font)
+
+			var getXAxisHeight = function (node) {
+				try {
+					return Math.abs(node.childNodes[0].y2.baseVal.value - node.childNodes[0].y1.baseVal.value) + 1 + node.childNodes[1].clientHeight
+				} catch (e) {
+					return -1
+				}
+			}
+			padding = jsonToD3.reduce(Math.max, jsonToD3.map(getXAxisHeight, x_axis[0][0].childNodes), -Infinity)
+
+			x_axis.append("foreignObject")
 	                .attr("class","label")
 	                .append("xhtml:div")
 	                .attr("class","label")
@@ -637,9 +830,9 @@ var jsonToD3 = {
 					.style("vertical-align", "top")
 					.style("width", inner_width)
 					.style("font", chart_info.axes_label_font)
-					.style("left", (margins.left) + 'px')
-					.style("top", (svg[0][0].offsetTop + inner_height + margins.top + 25) + 'px')
-					.html(chart_info.x_label)
+					.style("left", svg[0][0].offsetLeft + margins.left)
+					.style("top", svg[0][0].offsetTop + margins.top + inner_height + padding)
+					.html(chart_info.axes.x_label)
 				/*
 				.append("text")
 					.attr("class", "label")
@@ -651,24 +844,40 @@ var jsonToD3 = {
 				*/
 
 			// y-axis
-			svg.append("g")
-					.attr("class", "y axis")
-					.call(yAxis)
-					.style("fill", "#000") // Y Tick Labels
-					.style("font", chart_info.axes_font)
-				.append("foreignObject")
+			var y_axis = svg.append("g")
+						.attr("class", "y axis")
+						.call(yAxis)
+						.style("fill", "#000") // Y Tick Labels
+						.style("font", chart_info.axes_font)
+
+			var getYAxisWidth = function (node) {
+				try {
+					return Math.abs(node.childNodes[0].x2.baseVal.value - node.childNodes[0].x1.baseVal.value) + 1 + node.childNodes[1].clientWidth
+				} catch (e) {
+					return -1
+				}
+			}
+			padding = jsonToD3.reduce(Math.max, jsonToD3.map(getYAxisWidth, y_axis[0][0].childNodes), -Infinity)
+			sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.axes_label_font + ";")
+			sneakyDiv.innerHTML = chart_info.axes.y_label
+			textHeight = sneakyDiv.clientHeight
+			textWidth = sneakyDiv.clientWidth
+
+			y_axis.append("foreignObject")
 	                .attr("class","label")
 	                .append("xhtml:div")               
 	                .attr("class","label")
 					.style("position", "absolute")
 					.style("text-align", "center")
 					.style("vertical-align", "top")
-					.style("width", inner_width)
+					.style("width", inner_height)
+					.style("height", "auto")
 					.style("font", chart_info.axes_label_font)
-					.style("top", (svg[0][0].offsetTop + inner_height/2) + 'px')
-					.style("left", (-inner_width/2) + 'px')
+					.style("top", svg[0][0].offsetTop + margins.top + inner_height)
+					.style("left", svg[0][0].offsetLeft + margins.left - padding - textHeight - 4)
 					.style("transform", "rotate(-90deg)")
-					.text(chart_info.y_label)
+					.style("transform-origin", "0% 0%")
+					.text(chart_info.axes.y_label)
 				/*
 				.append("text")
 					.attr("class", "label")
@@ -707,7 +916,7 @@ var jsonToD3 = {
 		            .style("stroke-width", ds.line_width )
 		            .style("opacity", ds.line_opacity )
 		            .style("fill", "none" )
-					.attr("id", 'tag_'+ jsonToD3.slugify(ds.series_name)) // assign ID
+					.attr("id", function(d) {return jsonToD3.get_path_tag(unique_tag, ds.series_name)}) // assign ID
 					.attr("d", line(ds.data))
 		    }
 
@@ -719,27 +928,13 @@ var jsonToD3 = {
 					.attr("r", function(d) {return d.marker_radius})
 					.attr("cx", xMap)
 					.attr("cy", yMap)
-					.attr("id", function(d) {return 'tag_'+ jsonToD3.slugify(d.series_name)}) // assign ID
+					.attr("id", function(d) {return jsonToD3.get_node_tag(unique_tag, d.series_name)}) // assign ID
 					.style("opacity", function(d) {return d.marker_opacity})
 					.style("stroke", function(d) {return d.marker_border})
 					.style("fill", function(d) {return color(cValue(d))}) 
-
-
-			// draw bigger invisible dots for mouseover
-			svg.selectAll(".invisi_marker")
-					.data(data_points)
-				.enter().append("circle")
-					.attr("class", "invisi_marker")
-					.attr("r", function(d) {return d.marker_radius + 3})
-					.attr("cx", xMap)
-					.attr("cy", yMap)
-					.attr("id", function(d) {return 'tag_'+ jsonToD3.slugify(d.series_name)}) // assign ID
-					.style("opacity", 0)
-					.style("stroke", function(d) {return d.marker_border})
-					.style("fill", function(d) {return color(cValue(d))}) 
 					.on("mouseover", function(d) {
-										var key = svgParent.tagName + "|" + jsonToD3.slugify(cValue(d))
-										var isActive = jsonToD3.activeSeriesInCharts[key] ? true : false
+										var key = jsonToD3.get_series_key(unique_tag, cValue(d))
+										var isActive = jsonToD3.activeSeriesInCharts[key]['active'] ? true : false
 										if (!isActive) { return }
 
 										var tooltip_text = ""
@@ -753,8 +948,8 @@ var jsonToD3 = {
 			           						.style("left", (d3.event.pageX + 5 + d.marker_radius) + "px")
 			           						.style("top", (d3.event.pageY - 28 - d.marker_radius/2) + "px")
 
-			           					// If we're fairly sure that MathJax exists
-			           					if (MathJax != null) {
+			           					// If we're fairly sure that MathJax exists			           					
+			           					if ("MathJax" in window) {
 			           						if (MathJax.Hub != null) {
 			           							if (MathJax.Hub.Queue != null) {
 					           						var getType = {}
@@ -770,8 +965,8 @@ var jsonToD3 = {
 											.style("opacity", .9)
 			  						})
 					.on("mousemove", function(d) {
-										var key = svgParent.tagName + "|" + jsonToD3.slugify(cValue(d))
-										var isActive = jsonToD3.activeSeriesInCharts[key] ? true : false
+										var key = jsonToD3.get_series_key(unique_tag, cValue(d))
+										var isActive = jsonToD3.activeSeriesInCharts[key]['active'] ? true : false
 										if (!isActive) { return }
 
 										tooltip
@@ -779,8 +974,8 @@ var jsonToD3 = {
 			           						.style("top", (d3.event.pageY - 28 - d.marker_radius/2) + "px")
 			           				})
 					.on("mouseout", function(d) {
-										var key = svgParent.tagName + "|" + jsonToD3.slugify(cValue(d))
-										var isActive = jsonToD3.activeSeriesInCharts[key] ? true : false
+										var key = jsonToD3.get_series_key(unique_tag, cValue(d))
+										var isActive = jsonToD3.activeSeriesInCharts[key]['active'] ? true : false
 										if (!isActive) { return }
 
 										tooltip.transition()
@@ -792,37 +987,70 @@ var jsonToD3 = {
 				elem.parentNode.appendChild(elem);
 			})
 
+			for (var i = 0; i < chart_info.data_series.length; i++) {
+				var ds = chart_info.data_series[i]
+				var key = jsonToD3.get_series_key(unique_tag, ds.series_name)
+				jsonToD3.activeSeriesInCharts[key] = {}
+				jsonToD3.activeSeriesInCharts[key]['active'] = true
+				jsonToD3.activeSeriesInCharts[key]['org_opacity'] = {}
+				jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_node_tag(unique_tag, ds.series_name)] = ds.marker_opacity
+				jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_path_tag(unique_tag, ds.series_name)] = ds.line_opacity
+			}
 
 			if (chart_info.show_legend) {
-				var legend_shift_x = 0
-				var legend_shift_y = 0
+				var legend_shift_x = chart_info.legend_offset_x
+				var legend_shift_y = chart_info.legend_offset_y
 
 				var fadeSeriesOnClick = function(d) {
 					// Fade series in/out on click
-					var key = svgParent.tagName + "|" + jsonToD3.slugify(d)
-					var active = jsonToD3.activeSeriesInCharts[key] ? false : true
-					var newOpacity = active ? 1 : 0;  // Hard to recover original opacities
-					d3.selectAll("#tag_"+jsonToD3.slugify(d))
+					var key = jsonToD3.get_series_key(unique_tag, d)
+					var active = jsonToD3.activeSeriesInCharts[key]['active'] ? false : true
+					var newNodeOpacity = !active ? 0 : jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_node_tag(unique_tag, d)]
+					var newPathOpacity = !active ? 0 : jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_path_tag(unique_tag, d)]
+					var newLegendOpacity = !active ? 0.35 : 1
+					d3.selectAll("#"+jsonToD3.get_node_tag(unique_tag, d))
 						.transition().duration(300) 
-						.style("opacity", newOpacity);
-					jsonToD3.activeSeriesInCharts[key] = active;
+						.style("opacity", newNodeOpacity);
+					d3.selectAll("#"+jsonToD3.get_path_tag(unique_tag, d))
+						.transition().duration(300) 
+						.style("opacity", newPathOpacity);
+					d3.selectAll("#"+jsonToD3.get_legend_tag(unique_tag, d))
+						.transition().duration(300) 
+						.style("opacity", newLegendOpacity);
+					jsonToD3.activeSeriesInCharts[key]['active'] = active;
 				}
+
+				sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.legend_font + ";")
+				sneakyDiv.innerHTML = "abcdefghijklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz".toUpperCase()
+
+				textHeight = sneakyDiv.clientHeight
+				var legendDeltaGap = 3
+				var legendSquareSide = textHeight + 4 // 18
+				var legendSquareSidePlus = legendSquareSide + legendDeltaGap
+				
+				var legendWidth = legendSquareSide
+				var legendBorderShift = 1 + Math.floor(legendSquareSide / 3.0)
+
+
+				// draw legend background first
+				// var legend_bg = svg.append("rect")
 
 				// draw legend
 				var legend = svg.selectAll(".legend")
 					.data(color.domain())
 					.enter().append("g")
 					.attr("class", "legend")
-					.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+					.attr("transform", function(d, i) { return "translate(0," + (i * legendSquareSidePlus) + ")"; })
 
 				// draw legend colored rectangles
 				legend.append("rect")
-					.attr("x", inner_width - 18 + legend_shift_x)
-					.attr("y", 0 + legend_shift_y)
-					.attr("width", 18)
-					.attr("height", 18)
+					.attr("x", inner_width + margins.right - legendSquareSide + legend_shift_x - legendBorderShift)
+					.attr("y", 0 + legend_shift_y + legendBorderShift)
+					.attr("width", legendSquareSide)
+					.attr("height", legendSquareSide)
 					.style("fill", color)
-					//.on("click", fadeSeriesOnClick) // Hard to deal with recovering original opacities
+					.attr("id", function(d) {return jsonToD3.get_legend_tag(unique_tag, d)}) // assign ID
+					.on("click", fadeSeriesOnClick)
 
 				// draw legend text
 				/*
@@ -834,7 +1062,6 @@ var jsonToD3 = {
 					.text(function(d) { return d;})
 					.style("font", chart_info.legend_font)
 				//*/
-				//*
 				legend.append("foreignObject")
 	                .attr("class","label")
 	                .append("xhtml:div") 
@@ -842,16 +1069,39 @@ var jsonToD3 = {
 					.style("position", "absolute")
 					.style("text-align", "right")
 					.style("vertical-align", "middle")
-					.style("width", inner_width)
-					.style("font", chart_info.axes_label_font)
-					.style("left", (margins.left - 24) + 'px')
-					.style("top", function(d, i) { return (svg[0][0].offsetTop + margins.top + 2 + i * 20) + 'px' })
-					.attr("dy", ".35em")
-					//.style("text-anchor", "end")
-					.style("font", chart_info.legend_font)					
-					.text(function(d) { return d;}) //*/
-					//.on("click", fadeSeriesOnClick) // Hard to deal with recovering original opacities
+					//.style("width", inner_width)
+					.text(function(d) { return d;})
+					.style("width", function(d) { sneakyDiv.innerHTML=d; return sneakyDiv.clientWidth })
+					//.style("left", (margins.left + margins.right - 24) + 'px')
+					.style("left", function(d) { 
+						sneakyDiv.innerHTML = d
+						legendWidth = legendWidth > sneakyDiv.clientWidth + 6 + legendSquareSide ? legendWidth : sneakyDiv.clientWidth + 6 + legendSquareSide
+						return (svg[0][0].offsetLeft + legend_shift_x + inner_width - sneakyDiv.clientWidth + margins.left + margins.right - legendSquareSide - 6 - legendBorderShift) 
+					})
+					//.style("top", function(d, i) { return (svg[0][0].offsetTop + margins.top + 2 + i * 20) + 'px' })
+					.style("top", function(d, i) {
+						return (legend_shift_y + svg[0][0].offsetTop + margins.top + 2 + i * legendSquareSidePlus + legendBorderShift) 
+					})
+					.style("font", chart_info.legend_font)
+					.attr("id", function(d) {return jsonToD3.get_legend_tag(unique_tag, d)}) // assign ID
+					.on("click", fadeSeriesOnClick)
+
+				/*
+				var updateLegendBackground = function() {
+					legend_bg.attr("x", function() {return inner_width + margins.right + legend_shift_x - legendWidth - 2*legendBorderShift + 1})
+							.attr("y", 0 + legend_shift_y + 1)
+							.attr("width", function() {return legendWidth + 2*legendBorderShift - 2})
+							.attr("height", function() {return (legendSquareSidePlus * chart_info.data_series.length - legendDeltaGap) + 2*legendBorderShift - 2})
+							.style("stroke", "#000")
+							.style("stroke-width", 3)
+							.style("fill", "#666")
+							.style("opacity", 0.15)
+				}
+				updateLegendBackground()
+				*/
+
 			}
+			// body.removeChild(sneakyDiv) // Keep this little guy for later use
 
 		} catch(error) {
 			plotTag.setAttribute('error', "Unable to generate chart canvas.")
@@ -859,6 +1109,30 @@ var jsonToD3 = {
 		}
 
 		return {"svg": svg, "svgParent": svgParent, "chart_info": chart_info, "tooltip": tooltip, "title": title}
+	},
+
+	processTag: function(plotTag) {
+		var thisTag = ""
+		try {
+			thisTag = plotTag.tagName.toUpperCase()
+		} catch (e) {
+			throw "Invalid tag passed (type error)."
+		}
+
+		var valid_tag = false
+		for (var i = 0; i < jsonToD3.valid_plot_tags.length; i++) {
+			if (thisTag == jsonToD3.valid_plot_tags[i].toUpperCase()) {
+				valid_tag = true
+				break
+			}
+		}
+
+		if (!valid_tag) {
+			throw "Invalid tag passed."
+		}
+
+		var chart_info = jsonToD3.parseTagGetRawJSON(plotTag)
+		return jsonToD3.makeChartCanvas(plotTag, chart_info)
 	},
 
 	work: function() {
@@ -870,10 +1144,9 @@ var jsonToD3 = {
 			jsonToD3.activeSeriesInCharts = []
 		}
 
-		var plot_types = ["SCATTERPLOT", "BUBBLEPLOT"]
 		var plots = []
 
-		plot_types.forEach(function(pt) {
+		jsonToD3.valid_plot_tags.forEach(function(pt) {
 			var elems = document.getElementsByTagName(pt)
 			for (var i = 0; i < elems.length; i++) {
 				plots.push(elems[i])
@@ -882,20 +1155,19 @@ var jsonToD3 = {
 
 		for (var i = 0; i < plots.length; i++) {
 			var plotTag = plots[i]
-			var chartCanvas = jsonToD3.makeChartCanvas(plotTag)
-			if (chartCanvas == null) {
-				plotTag.setAttribute('rendered', false)
-				continue
-			} else {
-				chartArray.push(chartCanvas)
-				for (var j = 0; j < chartCanvas.chart_info.data_series.length; j++) {
-					var ds = chartCanvas.chart_info.data_series[j]
-					var key = chartCanvas.svgParent.tagName + "|" + jsonToD3.slugify(ds.series_name)
-					jsonToD3.activeSeriesInCharts[key] = true
-				}
-			}
+			if (plotTag.getAttribute('processed') == null) {
 
-			plotTag.setAttribute('rendered', true)
+				var chartCanvas = jsonToD3.processTag(plotTag)
+				plotTag.setAttribute('processed', "")
+				if (chartCanvas == null) {
+					plotTag.setAttribute('rendered', false)
+					continue
+				} else {
+					chartArray.push(chartCanvas)
+				}
+
+				plotTag.setAttribute('rendered', true)
+			}
 		}
 
 		return chartArray;
