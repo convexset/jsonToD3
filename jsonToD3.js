@@ -88,6 +88,26 @@ var jsonToD3 = {
 		return z
 	},
 
+	canMathJaxTypeSet: function() {
+		if ("MathJax" in window) {
+			if (MathJax.Hub != null) {
+				if (MathJax.Hub.Queue != null) {
+					var getType = {}
+					if (getType.toString.call(MathJax.Hub.Typeset) === '[object Function]') {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	},
+
+	doMathJaxTypeSetIfPossible: function(elem) {
+		if (jsonToD3.canMathJaxTypeSet()) {
+			MathJax.Hub.Typeset(elem)
+		}
+	},
+
 	matchRGB: function(s) {
 		var rgbRegEx1 = /^#[0-9,A-F,a-f]{6}$/
 		var rgbRegEx2 = /^#[0-9,A-F,a-f]{3}$/
@@ -635,6 +655,7 @@ var jsonToD3 = {
 		plotTag.setAttribute('plottype', chart_info.plot_type)
 		// console.log(chart_info.plot_type, chart_info)
 
+		var updateFunctions = {}
 		var svg = null
 		try {
 			var margins = chart_info.margins
@@ -952,17 +973,7 @@ var jsonToD3 = {
 			           						.style("left", (d3.event.pageX + 5 + d.marker_radius) + "px")
 			           						.style("top", (d3.event.pageY - 28 - d.marker_radius/2) + "px")
 
-			           					// If we're fairly sure that MathJax exists			           					
-			           					if ("MathJax" in window) {
-			           						if (MathJax.Hub != null) {
-			           							if (MathJax.Hub.Queue != null) {
-					           						var getType = {}
-					           						if (getType.toString.call(MathJax.Hub.Queue) === '[object Function]') {
-					           							MathJax.Hub.Queue(["Typeset",MathJax.Hub])
-					           						}
-					           					}
-			           						}
-			           					}
+			           					jsonToD3.doMathJaxTypeSetIfPossible(tooltip)
 
 										tooltip.transition()
 											.duration(200)
@@ -1001,6 +1012,8 @@ var jsonToD3 = {
 				var legend_shift_x = chart_info.legend_offset_x
 				var legend_shift_y = chart_info.legend_offset_y
 
+				updateFunctions["legend"] = function() {}
+
 				var fadeSeriesOnClick = function(d) {
 					// Fade series in/out on click
 					var key = jsonToD3.get_series_key(unique_tag, d)
@@ -1010,7 +1023,8 @@ var jsonToD3 = {
 					var newLegendOpacity = !active ? 0.35 : 1
 					d3.selectAll("#"+jsonToD3.get_node_tag(unique_tag, d))
 						.transition().duration(300) 
-						.style("opacity", newNodeOpacity);
+						.style("opacity", newNodeOpacity)
+						.style("visibility", newNodeOpacity == 0 ? "hidden" : "");
 					d3.selectAll("#"+jsonToD3.get_path_tag(unique_tag, d))
 						.transition().duration(300) 
 						.style("opacity", newPathOpacity);
@@ -1031,12 +1045,12 @@ var jsonToD3 = {
 				var legendSquareSide = textHeight + 4 // 18
 				var legendSquareSidePlus = legendSquareSide + legendDeltaGap
 				
-				var legendWidth = legendSquareSide
+				var legendWidth = -Infinity
 				var legendBorderShift = 1 + Math.floor(legendSquareSide / 3.0)
 
 
 				// draw legend background first
-				// var legend_bg = svg.append("rect")
+				var legend_bg = svg.append("rect")
 
 				// draw legend
 				var legend = svg.selectAll(".legend")
@@ -1054,6 +1068,27 @@ var jsonToD3 = {
 					.style("fill", color)
 					.attr("id", function(d) {return jsonToD3.get_legend_rect_tag(unique_tag, d)}) // assign ID
 					.on("click", fadeSeriesOnClick)
+					.on("mouseover", function(d) {
+										tooltip.html(d)
+			           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
+			           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
+
+			           					jsonToD3.doMathJaxTypeSetIfPossible(tooltip)
+
+										tooltip.transition()
+											.duration(200)
+											.style("opacity", .9)
+			  						})
+					.on("mousemove", function(d) {
+										tooltip
+			           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
+			           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
+			           				})
+					.on("mouseout", function(d) {
+										tooltip.transition()
+											.duration(500)
+											.style("opacity", 0);
+									})
 
 				// draw legend text
 				/*
@@ -1065,32 +1100,51 @@ var jsonToD3 = {
 					.text(function(d) { return d;})
 					.style("font", chart_info.legend_font)
 				//*/
-				legend.append("foreignObject")
-	                .attr("class","label")
-	                .append("xhtml:div") 
-					.attr("class", "legend")
-					.style("position", "absolute")
-					.style("text-align", "right")
-					.style("vertical-align", "middle")
-					//.style("width", inner_width)
-					.style("width", function(d) { sneakyDiv.innerHTML=d; return sneakyDiv.clientWidth })
-					//.style("left", (margins.left + margins.right - 24) + 'px')
-					.style("left", function(d) { 
-						sneakyDiv.innerHTML = d
-						legendWidth = legendWidth > sneakyDiv.clientWidth + 6 + legendSquareSide ? legendWidth : sneakyDiv.clientWidth + 6 + legendSquareSide
-						return (svg[0][0].offsetLeft + legend_shift_x + inner_width - sneakyDiv.clientWidth + margins.left + margins.right - legendSquareSide - 6 - legendBorderShift) 
-					})
-					//.style("top", function(d, i) { return (svg[0][0].offsetTop + margins.top + 2 + i * 20) + 'px' })
-					.style("top", function(d, i) {
-						return (legend_shift_y + svg[0][0].offsetTop + margins.top + 2 + i * legendSquareSidePlus + legendBorderShift) 
-					})
-					.style("font", chart_info.legend_font)
-					.attr("id", function(d) {return jsonToD3.get_legend_div_tag(unique_tag, d)}) // assign ID
-					.text(function(d) { return d;})
-					.on("click", fadeSeriesOnClick)
+				var legend_labels = legend.append("foreignObject")
+						                .attr("class","label")
+						                .append("xhtml:div") 
+										.attr("class", "legend")
+										.style("position", "absolute")
+										.style("text-align", "right")
+										.style("vertical-align", "middle")
+										.on("click", fadeSeriesOnClick)
+				
+				updateFunctions["legend"] = function() {
+					legendWidth = -Infinity
 
-				/*
-				var updateLegendBackground = function() {
+					var divHTML = {}
+					var divWidth = {}
+
+					legend_labels
+						//.style("width", inner_width)
+						.style("width", function(d) { 
+							sneakyDiv.innerHTML=d
+							jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
+
+							divHTML[d] = sneakyDiv.innerHTML
+							divWidth[d] = sneakyDiv.clientWidth
+
+							return divWidth[d]
+						})
+
+					legend_labels
+						//.style("left", (margins.left + margins.right - 24) + 'px')
+						.style("left", function(d) { 
+							// make sure divWidth is already populated
+							legendWidth = legendWidth > divWidth[d] + 6 + legendSquareSide ? legendWidth : divWidth[d] + 6 + legendSquareSide
+							return (svg[0][0].offsetLeft + legend_shift_x + inner_width - divWidth[d] + margins.left + margins.right - legendSquareSide - 6 - legendBorderShift) 
+						})
+						//.style("top", function(d, i) { return (svg[0][0].offsetTop + margins.top + 2 + i * 20) + 'px' })
+						.style("top", function(d, i) {
+							return (legend_shift_y + svg[0][0].offsetTop + margins.top + 2 + i * legendSquareSidePlus + legendBorderShift) 
+						})
+						.style("font", chart_info.legend_font)
+						.attr("id", function(d) {return jsonToD3.get_legend_div_tag(unique_tag, d)}) // assign ID
+						.html(function(d) { 
+							// make sure divHTML is already populated
+							return divHTML[d]
+						})
+
 					legend_bg.attr("x", function() {return inner_width + margins.right + legend_shift_x - legendWidth - 2*legendBorderShift + 1})
 							.attr("y", 0 + legend_shift_y + 1)
 							.attr("width", function() {return legendWidth + 2*legendBorderShift - 2})
@@ -1100,8 +1154,6 @@ var jsonToD3 = {
 							.style("fill", "#666")
 							.style("opacity", 0.15)
 				}
-				updateLegendBackground()
-				*/
 
 			}
 			// body.removeChild(sneakyDiv) // Keep this little guy for later use
@@ -1111,7 +1163,7 @@ var jsonToD3 = {
 			return null
 		}
 
-		return {"svg": svg, "svgParent": svgParent, "chart_info": chart_info, "tooltip": tooltip, "title": title}
+		return {"svg": svg, "svgParent": svgParent, "chart_info": chart_info, "tooltip": tooltip, "title": title, "updateFunctions": updateFunctions}
 	},
 
 	processTag: function(plotTag) {
@@ -1172,6 +1224,19 @@ var jsonToD3 = {
 				plotTag.setAttribute('rendered', true)
 			}
 		}
+
+		var runUpdateFunctions = null
+		runUpdateFunctions = function() {
+			if (jsonToD3.canMathJaxTypeSet()) {
+				for (var i = 0; i < chartArray.length; i++) {
+					for (var k in chartArray[i]["updateFunctions"]) {
+						chartArray[i]["updateFunctions"][k]()
+					}
+				}
+			}
+			window.setTimeout(runUpdateFunctions, 333)
+		}
+		window.setTimeout(runUpdateFunctions(), 50)
 
 		return chartArray;
 	}
