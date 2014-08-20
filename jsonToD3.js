@@ -701,28 +701,11 @@ var jsonToD3 = {
 		chart_data_description.x_max = -Infinity
 		chart_data_description.y_max = -Infinity
 
-		var all_data_points = []
+		var all_data_markers = []
 		var all_data_lines = []
 
 		for (var i = 0; i < chart_info.data_series.length; i++) {
 			var ds = chart_info.data_series[i]
-
-			if (ds.series_name == null) {
-				ds.series_name = "Series " + (i+1)
-			} else {
-				ds.series_name = ds.series_name.toString()
-			}
-			for (var j = 0; j < i; j++) {
-				if (ds.series_name == chart_info.data_series[j].series_name) {
-					errors.push("Duplicate series name (\"" + ds.series_name + "\") at indexes " + j + " and " + i + ".")
-				}
-
-				var thisSlug = jsonToD3.slugify(ds.series_name)
-				var thatSlug = jsonToD3.slugify(chart_info.data_series[j].series_name)
-				if (thisSlug == thatSlug) {
-					errors.push("Duplicate slugged series name (\"" + ds.series_name + "\" -> \"" + thisSlug + "\"; \"" + chart_info.data_series[j].series_name + "\" -> \"" + thatSlug + "\") at indexes " + j + " and " + i + ".")
-				}
-			}
 
 			if (!jsonToD3.validatePointPlotSettings(ds, chart_info.plot_type, ds.series_name, chart_info)) {
 				errors.push("Settings validation failed for series \"" + ds.series_name + "\".")
@@ -750,6 +733,23 @@ var jsonToD3 = {
 		for (var i = 0; i < chart_info.data_series.length; i++) {
 			var ds = chart_info.data_series[i]
 
+			if (ds.series_name == null) {
+				ds.series_name = "Series " + (i+1)
+			} else {
+				ds.series_name = ds.series_name.toString()
+			}
+			for (var j = 0; j < i; j++) {
+				if (ds.series_name == chart_info.data_series[j].series_name) {
+					errors.push("Duplicate series name (\"" + ds.series_name + "\") at indexes " + j + " and " + i + ".")
+				}
+
+				var thisSlug = jsonToD3.slugify(ds.series_name)
+				var thatSlug = jsonToD3.slugify(chart_info.data_series[j].series_name)
+				if (thisSlug == thatSlug) {
+					errors.push("Duplicate slugged series name (\"" + ds.series_name + "\" -> \"" + thisSlug + "\"; \"" + chart_info.data_series[j].series_name + "\" -> \"" + thatSlug + "\") at indexes " + j + " and " + i + ".")
+				}
+			}
+
 			chart_data_description.x_min = chart_data_description.x_min < ds.data_description.x_min ? chart_data_description.x_min : ds.data_description.x_min
 			chart_data_description.x_max = chart_data_description.x_max > ds.data_description.x_max ? chart_data_description.x_max : ds.data_description.x_max
 			chart_data_description.y_min = chart_data_description.y_min < ds.data_description.y_min ? chart_data_description.y_min : ds.data_description.y_min
@@ -758,7 +758,7 @@ var jsonToD3 = {
 			var points = ds.data
 			for (var j = 0; j < points.length; j++) {
 				if (ds.use_markers && ((chart_info.plot_type == "BUBBLEPLOT") || (points[j].marker_radius > 0))) {
-					all_data_points.push(points[j])
+					all_data_markers.push(points[j])
 				}
 			}
 			if (ds.draw_line) {
@@ -768,7 +768,7 @@ var jsonToD3 = {
 			}
 		}
 
-		chart_info.all_data_points = all_data_points
+		chart_info.all_data_markers = all_data_markers
 		chart_info.all_data_lines = all_data_lines
 		chart_info.chart_data_description = chart_data_description
 
@@ -803,7 +803,7 @@ var jsonToD3 = {
 			var inner_width = width - margins.left - margins.right
 			var inner_height = height - margins.top - margins.bottom
 
-			var data_points = chart_info.all_data_points
+			var data_markers = chart_info.all_data_markers
 			var data_lines = chart_info.all_data_lines
 
 			var unique_tag = "JSON_TO_DTHREE_CHARTAREA" + (++jsonToD3.plotIdx).toString()
@@ -1167,6 +1167,11 @@ var jsonToD3 = {
 					.style("fill", "none")
 					.style("shape-rendering", "crispEdges")
 
+			// Preserve series order
+		    for (var i = 0; i < chart_info.data_series.length; i++) {
+		    	color(chart_info.data_series[i].series_name)
+		    }
+			
 			// draw lines
 		    for (var i = 0; i < chart_info.data_series.length; i++) {
 		    	var ds = chart_info.data_series[i]
@@ -1189,7 +1194,7 @@ var jsonToD3 = {
 
 			// draw markers
 			svg.selectAll(".marker")
-					.data(data_points)
+					.data(data_markers)
 				.enter().append("circle")
 					.attr("class", "marker")
 					.attr("r", function(d) {return d.marker_radius})
