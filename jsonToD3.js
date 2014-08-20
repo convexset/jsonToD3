@@ -64,8 +64,12 @@ var jsonToD3 = {
 		return 'tag_' + unique_tag + '_path_' + jsonToD3.slugify(s)
 	},
 
-	get_legend_tag: function(unique_tag, s) {
-		return 'tag_' + unique_tag + '_legend_' + jsonToD3.slugify(s)
+	get_legend_rect_tag: function(unique_tag, s) {
+		return 'tag_' + unique_tag + '_legend_rect_' + jsonToD3.slugify(s)
+	},
+
+	get_legend_div_tag: function(unique_tag, s) {
+		return 'tag_' + unique_tag + '_legend_div_' + jsonToD3.slugify(s)
 	},
 
 	map: function(fn, arr) {
@@ -983,10 +987,6 @@ var jsonToD3 = {
 											.style("opacity", 0);
 									})
 			
-			d3.selectAll("circle.invisi_marker")[0].forEach(function(elem){
-				elem.parentNode.appendChild(elem);
-			})
-
 			for (var i = 0; i < chart_info.data_series.length; i++) {
 				var ds = chart_info.data_series[i]
 				var key = jsonToD3.get_series_key(unique_tag, ds.series_name)
@@ -1014,8 +1014,11 @@ var jsonToD3 = {
 					d3.selectAll("#"+jsonToD3.get_path_tag(unique_tag, d))
 						.transition().duration(300) 
 						.style("opacity", newPathOpacity);
-					d3.selectAll("#"+jsonToD3.get_legend_tag(unique_tag, d))
-						.transition().duration(300) 
+					d3.selectAll("#"+jsonToD3.get_legend_rect_tag(unique_tag, d))
+						.transition().duration(300)
+						.style("opacity", newLegendOpacity);
+					d3.selectAll("#"+jsonToD3.get_legend_div_tag(unique_tag, d))
+						.transition().duration(300)
 						.style("opacity", newLegendOpacity);
 					jsonToD3.activeSeriesInCharts[key]['active'] = active;
 				}
@@ -1049,7 +1052,7 @@ var jsonToD3 = {
 					.attr("width", legendSquareSide)
 					.attr("height", legendSquareSide)
 					.style("fill", color)
-					.attr("id", function(d) {return jsonToD3.get_legend_tag(unique_tag, d)}) // assign ID
+					.attr("id", function(d) {return jsonToD3.get_legend_rect_tag(unique_tag, d)}) // assign ID
 					.on("click", fadeSeriesOnClick)
 
 				// draw legend text
@@ -1070,7 +1073,6 @@ var jsonToD3 = {
 					.style("text-align", "right")
 					.style("vertical-align", "middle")
 					//.style("width", inner_width)
-					.text(function(d) { return d;})
 					.style("width", function(d) { sneakyDiv.innerHTML=d; return sneakyDiv.clientWidth })
 					//.style("left", (margins.left + margins.right - 24) + 'px')
 					.style("left", function(d) { 
@@ -1083,7 +1085,8 @@ var jsonToD3 = {
 						return (legend_shift_y + svg[0][0].offsetTop + margins.top + 2 + i * legendSquareSidePlus + legendBorderShift) 
 					})
 					.style("font", chart_info.legend_font)
-					.attr("id", function(d) {return jsonToD3.get_legend_tag(unique_tag, d)}) // assign ID
+					.attr("id", function(d) {return jsonToD3.get_legend_div_tag(unique_tag, d)}) // assign ID
+					.text(function(d) { return d;})
 					.on("click", fadeSeriesOnClick)
 
 				/*
