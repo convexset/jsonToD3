@@ -957,9 +957,10 @@ var jsonToD3 = {
 					.style("opacity", function(d) {return d.marker_opacity})
 					.style("stroke", function(d) {return d.marker_border})
 					.style("fill", function(d) {return color(cValue(d))}) 
+					.style("cursor", "crosshair")
 					.on("mouseover", function(d) {
 										var key = jsonToD3.get_series_key(unique_tag, cValue(d))
-										var isActive = jsonToD3.activeSeriesInCharts[key]['active'] ? true : false
+										var isActive = jsonToD3.activeSeriesInCharts[key]['active']
 										if (!isActive) { return }
 
 										var tooltip_text = ""
@@ -981,7 +982,7 @@ var jsonToD3 = {
 			  						})
 					.on("mousemove", function(d) {
 										var key = jsonToD3.get_series_key(unique_tag, cValue(d))
-										var isActive = jsonToD3.activeSeriesInCharts[key]['active'] ? true : false
+										var isActive = jsonToD3.activeSeriesInCharts[key]['active']
 										if (!isActive) { return }
 
 										tooltip
@@ -990,7 +991,7 @@ var jsonToD3 = {
 			           				})
 					.on("mouseout", function(d) {
 										var key = jsonToD3.get_series_key(unique_tag, cValue(d))
-										var isActive = jsonToD3.activeSeriesInCharts[key]['active'] ? true : false
+										var isActive = jsonToD3.activeSeriesInCharts[key]['active']
 										if (!isActive) { return }
 
 										tooltip.transition()
@@ -1035,6 +1036,10 @@ var jsonToD3 = {
 						.transition().duration(300)
 						.style("opacity", newLegendOpacity);
 					jsonToD3.activeSeriesInCharts[key]['active'] = active;
+
+					tooltip.transition()
+						.duration(300)
+						.style("opacity", 0);
 				}
 
 				sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.legend_font + ";")
@@ -1066,10 +1071,14 @@ var jsonToD3 = {
 					.attr("width", legendSquareSide)
 					.attr("height", legendSquareSide)
 					.style("fill", color)
+					.style("cursor", "pointer")
 					.attr("id", function(d) {return jsonToD3.get_legend_rect_tag(unique_tag, d)}) // assign ID
 					.on("click", fadeSeriesOnClick)
 					.on("mouseover", function(d) {
-										tooltip.html(d)
+										var key = jsonToD3.get_series_key(unique_tag, d)
+										var isActive = jsonToD3.activeSeriesInCharts[key]['active']
+
+										tooltip.html("<b>" + d + "</b><br/>" + (isActive ? "(Click to hide)" : "(Click to show)"))
 			           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
 			           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
 
@@ -1080,6 +1089,7 @@ var jsonToD3 = {
 											.style("opacity", .9)
 			  						})
 					.on("mousemove", function(d) {
+										// No need to update text... Tooltip will be hidden on toggle
 										tooltip
 			           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
 			           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
@@ -1087,7 +1097,7 @@ var jsonToD3 = {
 					.on("mouseout", function(d) {
 										tooltip.transition()
 											.duration(500)
-											.style("opacity", 0);
+											.style("opacity", 0)
 									})
 
 				// draw legend text
@@ -1107,7 +1117,33 @@ var jsonToD3 = {
 										.style("position", "absolute")
 										.style("text-align", "right")
 										.style("vertical-align", "middle")
+										.style("cursor", "pointer")
 										.on("click", fadeSeriesOnClick)
+										.on("mouseover", function(d) {
+															var key = jsonToD3.get_series_key(unique_tag, d)
+															var isActive = jsonToD3.activeSeriesInCharts[key]['active']
+
+															tooltip.html("<b>" + d + "</b><br/>" + (isActive ? "(Click to hide)" : "(Click to show)"))
+								           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
+								           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
+
+								           					jsonToD3.doMathJaxTypeSetIfPossible(tooltip)
+
+															tooltip.transition()
+																.duration(200)
+																.style("opacity", .9)
+								  						})
+										.on("mousemove", function(d) {
+															// No need to update text... Tooltip will be hidden on toggle
+															tooltip
+								           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
+								           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
+								           				})
+										.on("mouseout", function(d) {
+															tooltip.transition()
+																.duration(500)
+																.style("opacity", 0)
+														})
 				
 				updateFunctions["legend"] = function() {
 					legendWidth = -Infinity
