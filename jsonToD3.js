@@ -1,7 +1,101 @@
 /*
-TO DO:
-- legend background and div sizes after MathJax (for the onClick)
-- tickValues
+JSON to D3 is a simple JavaScript utility for converting JSON-formatted text or JSON into D3 charts.
+
+Original Motivation: To create a "text" to "charts" JavaScript utility so chart settings and data
+might be embedded in directly in version-control friendly static documents like HTML... or JSON
+files gettable by AJAX.
+
+Copyright (c) 2014 Jeremy Chen
+
+This code is licensed under the terms of the MIT License.
+
+
+I currently don't dare to give a version number since it remains ugly and hackish. (Just look at how the settings are
+organized...) But I'll get to that at some point...
+
+
+Features:
+- Works nicely with Chrome... (And what might that phrasing suggest...)
+- Does reasonably nice scatter plots (from <SCATTERPLOT>) and bubble plots (from <BUBBLEPLOT>)
+- Processes chart info inline (in HTML tags) or loaded from somewhere specified by the SRC attribute.
+- Allows hiding of data series if things are too cluttered (click on the legend)
+- Allows from LaTeX markup in the title, axis labels, legend labels and tool tips via
+  barely passable integration with MathJax.
+
+
+Settings:
+- Data series settings include:
+	* use_series_in_chart (boolean; default: true; quite meaningless to set it at the chart level)
+	* initially_hidden (boolean; default: false)
+	* use_markers (boolean; default: true)
+	* marker_opacity (0 to 1; default: 1)
+	* marker_radius (default: 3.5)
+	* marker_border_color (rgb; default: "#000" / "#000000")
+	* draw_line (boolean; default: true)
+	* line_opacity (0 to 1; default: 1)
+	* line_width (default: 1.5)
+	* line_interpolation (defaul: "linear"; see possible options)
+		... linear - piecewise linear segments, as in a polyline.
+		... step-before - alternate between vertical and horizontal segments, as in a step function. 
+		... step-after - alternate between horizontal and vertical segments, as in a step function. 
+		... basis - a B-spline, with control point duplication on the ends. 
+		... basis-open - an open B-spline; may not intersect the start or end. 
+		... basis-closed - a closed B-spline, as in a loop. 
+		... bundle - equivalent to basis, except the tension parameter is used to straighten the spline. 
+		... cardinal - a Cardinal spline, with control point duplication on the ends. 
+		... cardinal-open - an open Cardinal spline; may not intersect the start or end, but will intersect other control points. 
+		... cardinal-closed - a closed Cardinal spline, as in a loop. 
+		... monotone - cubic interpolation that preserves monotonicity in y
+	* bubble_scale (default: 25)
+- Chart level settings
+	* dimensions
+		... width
+		... height
+	* margins
+		... left
+		... right
+		... top
+		... bottom
+	* axes
+has_datetime_x_axis
+		... x_label (string)
+		... y_label (string)
+		... x_min (plot domain; floating point number; default given by data)
+		... y_max (plot domain; floating point number; default given by data)
+		... y_min (plot domain; floating point number; default given by data)
+		... x_max (plot domain; floating point number; default given by data)
+		... x_axis_format (string; see: https://github.com/mbostock/d3/wiki/Formatting)
+		... y_axis_format (string; see: https://github.com/mbostock/d3/wiki/Formatting)
+		... has_datetime_y_axis (boolean; default: false)
+		... has_datetime_x_axis (boolean; default: false)
+		... x_ticks (approximate number of ticks on axis; positive integer)
+		... y_ticks (approximate number of ticks on axis; positive integer)
+
+	* title_font (string; default: "bold 14px Sans-Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
+	* axes_font (string; see: default: "12px Sans-Serif"; http://www.w3schools.com/cssref/pr_font_font.asp)
+	* axes_label_font (string; default: "bold 12px Sans-Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
+	* legend_font (string; default: "12px Sans-Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
+	* tooltip_font (string; default: "12px Sans Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
+
+	* title (string)
+	* title_underline (boolean; default: false)
+
+	* show_legend (boolean; default: true)
+	* legend_offset_x (for shifting the legend; integer; default: 0)
+	* legend_offset_y (for shifting the legend; integer; default: 0)
+
+	* tooltip_color (rgb; default: "#005" / "#000055")
+	* tooltip_bgcolor (rgb; default: "#ddd" / "#dddddd")
+	* tooltip_border (rgb; default: "1px dotted"; see: http://www.w3schools.com/cssref/pr_border.asp)
+
+- Chart level settings include all of the data series settings. If something is set at the chart level and not at the
+  data series level, the data series will inherit the chart level setting. Whatever is not set that the chart level is
+  assumed to take the default. (I mean... that's what default means...)
+
+
+Now, on the Chrome friendliness, the issue really is whether I really want LaTeX typesetting in the title, axes labels and
+the legend. If I give that up, it should work well elsewhere.
+
 */
 
 var jsonToD3 = {
@@ -32,7 +126,7 @@ var jsonToD3 = {
 				throw "Need jQuery.ajax in order to load code by SRC=\"...\""
 			}
 			jQuery.ajax({
-						url: "examples/hdbRental_Aug2014.json",
+						url: external_data_source.toString(),
 						success: function(data){ json = data },
 						async: false,
 						dataType: "text"
@@ -118,6 +212,18 @@ var jsonToD3 = {
 	validatePointPlotSettings: function(info, plot_type, location, parent) {
 		var errors = []
 
+		if (info.use_series_in_chart != null) {
+			info.use_series_in_chart = true && info.use_series_in_chart
+		} else {
+			info.use_series_in_chart = (parent != null) ? parent.use_series_in_chart : true
+		}
+
+		if (info.initially_hidden != null) {
+			info.initially_hidden = true && info.initially_hidden
+		} else {
+			info.initially_hidden = (parent != null) ? parent.initially_hidden : false
+		}
+
 		////////////////////////////////////////////////////////////////
 		// Markers
 		////////////////////////////////////////////////////////////////
@@ -149,20 +255,20 @@ var jsonToD3 = {
 			errors.push("Invalid marker_radius at " + location.toString() + ".")
 		}
 
-		var DEFAULT_MARKER_BORDER = "#000"
-		if (info.marker_border != null) {
-			info.marker_border = info.marker_border.toString()
+		var DEFAULT_MARKER_BORDER_COLOR = "#000"
+		if (info.marker_border_color != null) {
+			info.marker_border_color = info.marker_border_color.toString()
 		} else {
-			info.marker_border = (parent != null) ? parent.marker_border : DEFAULT_MARKER_BORDER
+			info.marker_border_color = (parent != null) ? parent.marker_border_color : DEFAULT_MARKER_BORDER_COLOR
 		}
-		if ((info.marker_border.toLowerCase() != "none") && (!jsonToD3.matchRGB(info.marker_border))) {
-			errors.push("Invalid marker_border at " + location.toString() + ".")
+		if ((info.marker_border_color.toLowerCase() != "none") && (!jsonToD3.matchRGB(info.marker_border_color))) {
+			errors.push("Invalid marker_border_color at " + location.toString() + ".")
 		}
 
 		if (info.use_markers != null) {
 			info.use_markers = true && info.use_markers
 		} else {
-			info.use_markers = true
+			info.use_markers = (parent != null) ? parent.use_markers : true
 		}
 
 
@@ -203,6 +309,13 @@ var jsonToD3 = {
 			info.draw_line = true && info.draw_line
 		} else {
 			info.draw_line = (parent != null) ? parent.draw_line : true
+		}
+
+		var DEFAULT_LINE_INTERPOLATION = "linear"
+		if (info.line_interpolation != null) {
+			info.line_interpolation = info.line_interpolation.toString()
+		} else {
+			info.line_interpolation = (parent != null) ? parent.line_interpolation : DEFAULT_LINE_INTERPOLATION
 		}
 
 		////////////////////////////////////////////////////////////////
@@ -399,13 +512,25 @@ var jsonToD3 = {
 		if ((chart_info.tooltip_color != null) && (jsonToD3.matchRGB(chart_info.tooltip_color))) {
 			chart_info.tooltip_color = chart_info.tooltip_color.toString()
 		} else {
-			chart_info.tooltip_color = "#000"
+			chart_info.tooltip_color = "#005"
+		}
+
+		if ((chart_info.tooltip_bgcolor != null) && (jsonToD3.matchRGB(chart_info.tooltip_bgcolor))) {
+			chart_info.tooltip_bgcolor = chart_info.tooltip_bgcolor.toString()
+		} else {
+			chart_info.tooltip_bgcolor = "#ddd"
+		}
+
+		if (chart_info.tooltip_border != null) {
+			chart_info.tooltip_border = chart_info.tooltip_border.toString()
+		} else {
+			chart_info.tooltip_border = "1px dotted"
 		}
 
 		if (chart_info.tooltip_font != null) {
 			chart_info.tooltip_font = chart_info.tooltip_font.toString()
 		} else {
-			chart_info.tooltip_font = "11px Sans Serif"
+			chart_info.tooltip_font = "12px Sans Serif"
 		}
 
 
@@ -430,7 +555,7 @@ var jsonToD3 = {
 		if (chart_info.axes_font != null) {
 			chart_info.axes_font = chart_info.axes_font.toString()
 		} else {
-			chart_info.axes_font = "10px Sans-Serif"
+			chart_info.axes_font = "12px Sans-Serif"
 		}
 
 		if (chart_info.axes_label_font != null) {
@@ -529,7 +654,7 @@ var jsonToD3 = {
 			}
 
 			newPoint.marker_opacity = ds.marker_opacity
-			newPoint.marker_border = ds.marker_border
+			newPoint.marker_border_color = ds.marker_border_color
 
 
 			if (plot_type == "BUBBLEPLOT") {
@@ -541,11 +666,11 @@ var jsonToD3 = {
 				} else if (isFinite(ds.line_width) && isFinite(ds.line_opacity)) {
 					newPoint.marker_opacity = ds.line_opacity
 					newPoint.marker_radius = ds.line_width / 2.0
-					newPoint.marker_border = "none"
+					newPoint.marker_border_color = "none"
 				} else {
 					newPoint.marker_opacity = 0
 					newPoint.marker_radius = 0
-					newPoint.marker_border = "none"
+					newPoint.marker_border_color = "none"
 				}
 			}
 
@@ -609,18 +734,30 @@ var jsonToD3 = {
 			var data_description = jsonToD3.checkAndParsePointsAndLabel(ds, chart_info.plot_type, chart_info.axes.has_datetime_x_axis, chart_info.axes.has_datetime_y_axis)
 			if (data_description != null) {
 				ds.data_description = data_description
-
-				chart_data_description.x_min = chart_data_description.x_min < data_description.x_min ? chart_data_description.x_min : data_description.x_min
-				chart_data_description.x_max = chart_data_description.x_max > data_description.x_max ? chart_data_description.x_max : data_description.x_max
-				chart_data_description.y_min = chart_data_description.y_min < data_description.y_min ? chart_data_description.y_min : data_description.y_min
-				chart_data_description.y_max = chart_data_description.y_max > data_description.y_max ? chart_data_description.y_max : data_description.y_max
 			} else {
 				return false
 			}
+		}
+
+		var tmp_series = chart_info.data_series
+		chart_info.data_series = []
+		for (var i = 0; i < tmp_series.length; i++) {
+			if (tmp_series[i].use_series_in_chart) {
+				chart_info.data_series.push(tmp_series[i])
+			}
+		}
+
+		for (var i = 0; i < chart_info.data_series.length; i++) {
+			var ds = chart_info.data_series[i]
+
+			chart_data_description.x_min = chart_data_description.x_min < ds.data_description.x_min ? chart_data_description.x_min : ds.data_description.x_min
+			chart_data_description.x_max = chart_data_description.x_max > ds.data_description.x_max ? chart_data_description.x_max : ds.data_description.x_max
+			chart_data_description.y_min = chart_data_description.y_min < ds.data_description.y_min ? chart_data_description.y_min : ds.data_description.y_min
+			chart_data_description.y_max = chart_data_description.y_max > ds.data_description.y_max ? chart_data_description.y_max : ds.data_description.y_max
 
 			var points = ds.data
 			for (var j = 0; j < points.length; j++) {
-				if ((chart_info.plot_type == "BUBBLEPLOT") || (points[j].marker_radius > 0)) {
+				if (ds.use_markers && ((chart_info.plot_type == "BUBBLEPLOT") || (points[j].marker_radius > 0))) {
 					all_data_points.push(points[j])
 				}
 			}
@@ -656,6 +793,8 @@ var jsonToD3 = {
 		// console.log(chart_info.plot_type, chart_info)
 
 		var updateFunctions = {}
+		var managementFunctions = {}
+
 		var svg = null
 		try {
 			var margins = chart_info.margins
@@ -689,26 +828,128 @@ var jsonToD3 = {
 			body.appendChild(sneakyDiv)
 			var textHeight = 0
 			var textWidth = 0
-			var padding = 0
+			var tooltip_padding = 0
 
 			sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + ";")
 			sneakyDiv.innerHTML = "abcdefghijklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz".toUpperCase()
 			textHeight = sneakyDiv.clientHeight
 			textWidth = sneakyDiv.clientWidth
 
+			tooltip_padding = Math.max(2,Math.ceil(textHeight/3.0))
+
 			var tooltip = d3.select(unique_tag).append("div")
 								.attr("class", "tooltip")
 								.style("opacity", 0)
 								.style("position", "absolute")
-								//.style("width", "200px")
-								//.style("height", "28px")
-								.style("width", Math.max(100, textWidth))
-								.style("height", Math.max(30, 4 + 5*textHeight))
+								.style("padding", tooltip_padding)
+								.style("width", Math.max(100, Math.ceil(textWidth/2.5)))
+								.style("height", Math.max(30, 4 + 4*textHeight))
 								.style("pointer-events", "none")
 								.style("text-align", "left")
-								.style("vertical-align", "top")
+								.style("vertical-align", "middle")
 								.style("color", chart_info.tooltip_color)
+								.style("background-color", chart_info.tooltip_bgcolor)
+								.style("border", chart_info.tooltip_border)
 								.style("font", chart_info.tooltip_font)
+
+			var getSeriesKey = function(d) {
+				return jsonToD3.get_series_key(unique_tag, d)
+			}
+			managementFunctions["getSeriesKey"] = getSeriesKey
+
+		    // Various Event Handlers
+			var fadeToolTip = function() {
+				tooltip.transition()
+					.duration(300)
+					.style("opacity", 0);
+			}
+			managementFunctions["fadeToolTip"] = fadeToolTip
+
+			var showOrHideSeries = function(d, active) {
+				var key = getSeriesKey(d)
+				var newNodeOpacity = !active ? 0 : jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_node_tag(unique_tag, d)]
+				var newPathOpacity = !active ? 0 : jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_path_tag(unique_tag, d)]
+				var newLegendOpacity = !active ? 0.35 : 1
+				d3.selectAll("#"+jsonToD3.get_node_tag(unique_tag, d))
+					.transition().duration(300) 
+					.style("opacity", newNodeOpacity)
+					.style("visibility", newNodeOpacity == 0 ? "hidden" : "");
+				d3.selectAll("#"+jsonToD3.get_path_tag(unique_tag, d))
+					.transition().duration(300) 
+					.style("opacity", newPathOpacity);
+				d3.selectAll("#"+jsonToD3.get_legend_rect_tag(unique_tag, d))
+					.transition().duration(300)
+					.style("opacity", newLegendOpacity);
+				d3.selectAll("#"+jsonToD3.get_legend_div_tag(unique_tag, d))
+					.transition().duration(300)
+					.style("opacity", newLegendOpacity);
+				jsonToD3.activeSeriesInCharts[key]['active'] = active;
+			}
+			managementFunctions["showOrHideSeries"] = showOrHideSeries
+
+			var toggleFadeSeries = function(d) {
+				var key = getSeriesKey(d)
+				showOrHideSeries(d, !jsonToD3.activeSeriesInCharts[key]['active'])
+				fadeToolTip()
+			}
+			managementFunctions["toggleFadeSeries"] = toggleFadeSeries
+
+			var fadeOtherSeriesShowThisOnly = function(d) {
+				for (var i = 0; i < chart_info.data_series.length; i++) {
+					var other_d = chart_info.data_series[i].series_name
+					showOrHideSeries(other_d, (other_d == d))
+				}
+				fadeToolTip()
+			}
+			managementFunctions["fadeOtherSeriesShowThisOnly"] = fadeOtherSeriesShowThisOnly
+
+			var showAllSeries = function() {
+				for (var i = 0; i < chart_info.data_series.length; i++) {
+					showOrHideSeries(chart_info.data_series[i].series_name, true)
+				}
+				fadeToolTip()
+			}
+			managementFunctions["showAllSeries"] = showAllSeries
+
+			var markerMouseOver = function(d) {
+				var key = getSeriesKey(cValue(d))
+				var isActive = jsonToD3.activeSeriesInCharts[key]['active']
+				if (!isActive) { return }
+
+				var tooltip_text = ""
+				if (d.id == "") {
+					tooltip_text = "<div>(" + xValueTT(d) + ", " + yValueTT(d) + ")" + "<br/><em>" + cValue(d) + "</em></div>"
+				} else {
+					tooltip_text = "<div><b>" + d.id + "</b><br/>(" + xValueTT(d) + ", " + yValueTT(d) + ")" + "<br/><em>" + cValue(d) + "</em></div>"
+				}
+
+				sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + ";")
+				sneakyDiv.innerHTML = tooltip_text
+					jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
+
+				tooltip
+					.style("width", sneakyDiv.clientWidth + 2)
+					.style("height", sneakyDiv.clientHeight + 2)
+
+				tooltip.html(sneakyDiv.innerHTML)
+						.style("left", (d3.event.pageX + 5 + d.marker_radius) + "px")
+						.style("top", (d3.event.pageY - 28 - d.marker_radius/2) + "px")
+
+				tooltip.transition()
+					.duration(200)
+					.style("opacity", .9)
+			}
+
+			var markerMouseMove = function(d) {
+				var key = getSeriesKey(cValue(d))
+				var isActive = jsonToD3.activeSeriesInCharts[key]['active']
+				if (!isActive) { return }
+
+				tooltip
+					.style("left", (d3.event.pageX + 5 + d.marker_radius) + "px")
+					.style("top", (d3.event.pageY - 28 - d.marker_radius/2) + "px")
+			}
+
 
 			var title = null
 			if (chart_info.title != "") {
@@ -719,7 +960,7 @@ var jsonToD3 = {
 								.style("font", chart_info.title_font)
 								.style("text-anchor", "middle")
 								.style("text-decoration", chart_info.title_underline ? "underline" : "none")
-								.attr("x", inner_width / 2) // Huh!? Why is margins.left+(inner_width/2) wrong?
+								.attr("x", inner_width / 2)
 								.attr("y", -8)
 				//*/
 
@@ -728,7 +969,7 @@ var jsonToD3 = {
 								.attr("class", "title")
 								.style("position", "absolute")
 								.style("width", inner_width)
-								//.style("height", inner_height)
+								.style("height", "auto")
 								.style("font", chart_info.title_font)
 								.style("text-align", "center")
 								.style("vertical-align", "top")
@@ -736,6 +977,8 @@ var jsonToD3 = {
 								.html(chart_info.title)
 								.style("left", svg[0][0].offsetLeft + margins.left)
 								.style("top", 0)
+								.style("cursor", "pointer")
+								.on("click", showAllSeries)
 			}
 
 
@@ -924,16 +1167,15 @@ var jsonToD3 = {
 					.style("fill", "none")
 					.style("shape-rendering", "crispEdges")
 
-
 			// draw lines
-			var line = d3.svg.line()	
-					    .x(function(d) { return xMap(d) })
-					    .y(function(d) { return yMap(d) })
-			var dataNest = d3.nest()
-				.key(function(d) {return d.series_name})
-				.entries(data_lines);
 		    for (var i = 0; i < chart_info.data_series.length; i++) {
 		    	var ds = chart_info.data_series[i]
+
+				var line = d3.svg.line()	
+				    .x(function(d) { return xMap(d) })
+				    .y(function(d) { return yMap(d) })
+					.interpolate(ds.line_interpolation)
+
 		    	if (!ds.draw_line) { continue }
 				svg.append("path")
 					.attr("class", "line")
@@ -945,7 +1187,7 @@ var jsonToD3 = {
 					.attr("d", line(ds.data))
 		    }
 
-			// draw dots
+			// draw markers
 			svg.selectAll(".marker")
 					.data(data_points)
 				.enter().append("circle")
@@ -955,53 +1197,16 @@ var jsonToD3 = {
 					.attr("cy", yMap)
 					.attr("id", function(d) {return jsonToD3.get_node_tag(unique_tag, d.series_name)}) // assign ID
 					.style("opacity", function(d) {return d.marker_opacity})
-					.style("stroke", function(d) {return d.marker_border})
+					.style("stroke", function(d) {return d.marker_border_color})
 					.style("fill", function(d) {return color(cValue(d))}) 
 					.style("cursor", "crosshair")
-					.on("mouseover", function(d) {
-										var key = jsonToD3.get_series_key(unique_tag, cValue(d))
-										var isActive = jsonToD3.activeSeriesInCharts[key]['active']
-										if (!isActive) { return }
-
-										var tooltip_text = ""
-										if (d.id == "") {
-											tooltip_text = "(" + xValueTT(d) + ", " + yValueTT(d) + ")" + "<br/>(" + cValue(d) + ")"
-										} else {
-											tooltip_text = "<b>" + d.id + "</b><br/>(" + xValueTT(d) + ", " + yValueTT(d) + ")" + "<br/>(" + cValue(d) + ")"
-										}
-
-										tooltip.html(tooltip_text)
-			           						.style("left", (d3.event.pageX + 5 + d.marker_radius) + "px")
-			           						.style("top", (d3.event.pageY - 28 - d.marker_radius/2) + "px")
-
-			           					jsonToD3.doMathJaxTypeSetIfPossible(tooltip)
-
-										tooltip.transition()
-											.duration(200)
-											.style("opacity", .9)
-			  						})
-					.on("mousemove", function(d) {
-										var key = jsonToD3.get_series_key(unique_tag, cValue(d))
-										var isActive = jsonToD3.activeSeriesInCharts[key]['active']
-										if (!isActive) { return }
-
-										tooltip
-			           						.style("left", (d3.event.pageX + 5 + d.marker_radius) + "px")
-			           						.style("top", (d3.event.pageY - 28 - d.marker_radius/2) + "px")
-			           				})
-					.on("mouseout", function(d) {
-										var key = jsonToD3.get_series_key(unique_tag, cValue(d))
-										var isActive = jsonToD3.activeSeriesInCharts[key]['active']
-										if (!isActive) { return }
-
-										tooltip.transition()
-											.duration(500)
-											.style("opacity", 0);
-									})
+					.on("mouseover", markerMouseOver)
+					.on("mousemove", markerMouseMove)
+					.on("mouseout", fadeToolTip)
 			
 			for (var i = 0; i < chart_info.data_series.length; i++) {
 				var ds = chart_info.data_series[i]
-				var key = jsonToD3.get_series_key(unique_tag, ds.series_name)
+				var key = getSeriesKey(ds.series_name)
 				jsonToD3.activeSeriesInCharts[key] = {}
 				jsonToD3.activeSeriesInCharts[key]['active'] = true
 				jsonToD3.activeSeriesInCharts[key]['org_opacity'] = {}
@@ -1015,43 +1220,52 @@ var jsonToD3 = {
 
 				updateFunctions["legend"] = function() {}
 
-				var fadeSeriesOnClick = function(d) {
-					// Fade series in/out on click
-					var key = jsonToD3.get_series_key(unique_tag, d)
-					var active = jsonToD3.activeSeriesInCharts[key]['active'] ? false : true
-					var newNodeOpacity = !active ? 0 : jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_node_tag(unique_tag, d)]
-					var newPathOpacity = !active ? 0 : jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_path_tag(unique_tag, d)]
-					var newLegendOpacity = !active ? 0.35 : 1
-					d3.selectAll("#"+jsonToD3.get_node_tag(unique_tag, d))
-						.transition().duration(300) 
-						.style("opacity", newNodeOpacity)
-						.style("visibility", newNodeOpacity == 0 ? "hidden" : "");
-					d3.selectAll("#"+jsonToD3.get_path_tag(unique_tag, d))
-						.transition().duration(300) 
-						.style("opacity", newPathOpacity);
-					d3.selectAll("#"+jsonToD3.get_legend_rect_tag(unique_tag, d))
-						.transition().duration(300)
-						.style("opacity", newLegendOpacity);
-					d3.selectAll("#"+jsonToD3.get_legend_div_tag(unique_tag, d))
-						.transition().duration(300)
-						.style("opacity", newLegendOpacity);
-					jsonToD3.activeSeriesInCharts[key]['active'] = active;
-
-					tooltip.transition()
-						.duration(300)
-						.style("opacity", 0);
-				}
-
 				sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.legend_font + ";")
 				sneakyDiv.innerHTML = "abcdefghijklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz".toUpperCase()
 
 				textHeight = sneakyDiv.clientHeight
 				var legendDeltaGap = 3
-				var legendSquareSide = textHeight + 4 // 18
+				var legendSquareSide = textHeight + 4
 				var legendSquareSidePlus = legendSquareSide + legendDeltaGap
 				
 				var legendWidth = -Infinity
 				var legendBorderShift = 1 + Math.floor(legendSquareSide / 3.0)
+
+				var legendMouseOver = function(d) {
+					var key = getSeriesKey(d)
+					var isActive = jsonToD3.activeSeriesInCharts[key]['active']
+
+					var tooltip_text = "<b>" + d + "</b><br/>" + (isActive ? "(Click to hide)" : "(Click to show)")
+					tooltip_text += "<br/>(Right click to show only this.)"
+					if (title != null) {
+						tooltip_text += "<br/>(Click the title to show all series.)"
+					}
+
+					sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + ";")
+					sneakyDiv.innerHTML = tooltip_text
+						jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
+
+					tooltip
+						.style("width", sneakyDiv.clientWidth + 2)
+						.style("height", sneakyDiv.clientHeight + 2)
+
+					tooltip.html(sneakyDiv.innerHTML)
+							.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
+							.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
+
+						jsonToD3.doMathJaxTypeSetIfPossible(tooltip)
+
+					tooltip.transition()
+						.duration(200)
+						.style("opacity", .9)
+				}
+
+				var legendMouseMove = function(d) {
+					// No need to update text... Tooltip will be hidden on toggle
+					tooltip
+   						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
+   						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
+   				}
 
 
 				// draw legend background first
@@ -1073,32 +1287,11 @@ var jsonToD3 = {
 					.style("fill", color)
 					.style("cursor", "pointer")
 					.attr("id", function(d) {return jsonToD3.get_legend_rect_tag(unique_tag, d)}) // assign ID
-					.on("click", fadeSeriesOnClick)
-					.on("mouseover", function(d) {
-										var key = jsonToD3.get_series_key(unique_tag, d)
-										var isActive = jsonToD3.activeSeriesInCharts[key]['active']
-
-										tooltip.html("<b>" + d + "</b><br/>" + (isActive ? "(Click to hide)" : "(Click to show)"))
-			           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
-			           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
-
-			           					jsonToD3.doMathJaxTypeSetIfPossible(tooltip)
-
-										tooltip.transition()
-											.duration(200)
-											.style("opacity", .9)
-			  						})
-					.on("mousemove", function(d) {
-										// No need to update text... Tooltip will be hidden on toggle
-										tooltip
-			           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
-			           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
-			           				})
-					.on("mouseout", function(d) {
-										tooltip.transition()
-											.duration(500)
-											.style("opacity", 0)
-									})
+					.on("click", toggleFadeSeries)
+					.on("contextmenu", function(d){ d3.event.preventDefault(); fadeOtherSeriesShowThisOnly(d); })
+					.on("mouseover", legendMouseOver)
+					.on("mousemove", legendMouseMove)
+					.on("mouseout", fadeToolTip)
 
 				// draw legend text
 				/*
@@ -1118,32 +1311,11 @@ var jsonToD3 = {
 										.style("text-align", "right")
 										.style("vertical-align", "middle")
 										.style("cursor", "pointer")
-										.on("click", fadeSeriesOnClick)
-										.on("mouseover", function(d) {
-															var key = jsonToD3.get_series_key(unique_tag, d)
-															var isActive = jsonToD3.activeSeriesInCharts[key]['active']
-
-															tooltip.html("<b>" + d + "</b><br/>" + (isActive ? "(Click to hide)" : "(Click to show)"))
-								           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
-								           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
-
-								           					jsonToD3.doMathJaxTypeSetIfPossible(tooltip)
-
-															tooltip.transition()
-																.duration(200)
-																.style("opacity", .9)
-								  						})
-										.on("mousemove", function(d) {
-															// No need to update text... Tooltip will be hidden on toggle
-															tooltip
-								           						.style("left", (d3.event.pageX + 1 + legendSquareSide/2) + "px")
-								           						.style("top", (d3.event.pageY - 1 - legendSquareSide/2) + "px")
-								           				})
-										.on("mouseout", function(d) {
-															tooltip.transition()
-																.duration(500)
-																.style("opacity", 0)
-														})
+										.on("click", toggleFadeSeries)
+										.on("contextmenu", function(d){ d3.event.preventDefault(); fadeOtherSeriesShowThisOnly(d); })
+										.on("mouseover", legendMouseOver)
+										.on("mousemove", legendMouseMove)
+										.on("mouseout", fadeToolTip)
 				
 				updateFunctions["legend"] = function() {
 					legendWidth = -Infinity
@@ -1151,8 +1323,9 @@ var jsonToD3 = {
 					var divHTML = {}
 					var divWidth = {}
 
+					sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.legend_font + ";")
+
 					legend_labels
-						//.style("width", inner_width)
 						.style("width", function(d) { 
 							sneakyDiv.innerHTML=d
 							jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
@@ -1164,13 +1337,11 @@ var jsonToD3 = {
 						})
 
 					legend_labels
-						//.style("left", (margins.left + margins.right - 24) + 'px')
 						.style("left", function(d) { 
 							// make sure divWidth is already populated
 							legendWidth = legendWidth > divWidth[d] + 6 + legendSquareSide ? legendWidth : divWidth[d] + 6 + legendSquareSide
 							return (svg[0][0].offsetLeft + legend_shift_x + inner_width - divWidth[d] + margins.left + margins.right - legendSquareSide - 6 - legendBorderShift) 
 						})
-						//.style("top", function(d, i) { return (svg[0][0].offsetTop + margins.top + 2 + i * 20) + 'px' })
 						.style("top", function(d, i) {
 							return (legend_shift_y + svg[0][0].offsetTop + margins.top + 2 + i * legendSquareSidePlus + legendBorderShift) 
 						})
@@ -1190,6 +1361,7 @@ var jsonToD3 = {
 							.style("fill", "#666")
 							.style("opacity", 0.15)
 				}
+				updateFunctions["legend"]()
 
 			}
 			// body.removeChild(sneakyDiv) // Keep this little guy for later use
@@ -1199,7 +1371,22 @@ var jsonToD3 = {
 			return null
 		}
 
-		return {"svg": svg, "svgParent": svgParent, "chart_info": chart_info, "tooltip": tooltip, "title": title, "updateFunctions": updateFunctions}
+		// Post Admin
+		var seriesNames = []
+		for (var i = 0; i < chart_info.data_series.length; i++) {
+			seriesNames.push(chart_info.data_series[i].series_name)
+
+			if (chart_info.data_series[i].initially_hidden) {
+				managementFunctions["showOrHideSeries"](chart_info.data_series[i].series_name, false)
+			}
+		}
+		return {
+				"seriesNames": seriesNames,
+				"svg": svg, "svgParent": svgParent,
+				"chart_info": chart_info, "tooltip": tooltip,
+				"updateFunctions": updateFunctions,
+				"managementFunctions": managementFunctions
+			}
 	},
 
 	processTag: function(plotTag) {

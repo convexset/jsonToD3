@@ -6,33 +6,30 @@
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
 <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
 
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "messageStyle" : "none",
+    "HTML-CSS": { availableFonts: ["TeX"] },
+    "delayStartupUntil" : "onload"
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js">
+</script>
+
 <script type="text/javascript" src="jsonToD3.js"></script>	
 
 <script type="text/javascript">
 var chartArray = null
 function init() {
 	chartArray = jsonToD3.work();
-
-	var head = document.getElementsByTagName("head")[0]
-	var script = document.createElement("script")
-	script.type = "text/x-mathjax-config";
-	script[(window.opera ? "innerHTML" : "text")] =
-		"MathJax.Hub.Config({\n" +
-		"	extensions: [\"tex2jax.js\"],\n" +
-		"	jax: [\"input/TeX\", \"output/HTML-CSS\"],\n" +
-		"	tex2jax: {\n" +
-		"		inlineMath: [['$','$'], ['\\\\(','\\\\)']],\n" +
-		"		displayMath: [ ['$$','$$'], ['\\\\[','\\\\]']],\n" +
-		"		processEscapes: true\n" +
-		"	},\n" +
-		" 	\"messageStyle\": \"none\",\n" +
-		" 	\"HTML-CSS\": { availableFonts: [\"TeX\"] }\n" +
-		"});"
-	head.appendChild(script);
-	script = document.createElement("script");
-		script.type = "text/javascript";
-		script.src  = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-	head.appendChild(script);
 }
 </script>	
 
@@ -48,11 +45,13 @@ function init() {
 </DIV>
 
 <h3>The Chart</h3>
-Things are a bit cluttered. Try clicking on the legend to hide some series.<br><br>
+Things are a bit cluttered. Try clicking on the legend to hide some series. Right click to show just one series.<br><br>
 
 For details on the points, try hovering the mouse cursor over some of them.<br><br>
 
-Also note that data is being loaded from some other file in contrast to the examples in <A HREF="examples_inline.html">examples_inline.html</A>.
+Note also that the translucent points lead to something of a empirical density plot. (So, opacity can, of course, be customized...)<br><br>
+
+Also note that data is being loaded from some other file in contrast to the examples in <A HREF="examples_inline.html">examples_inline.html</A>. Tentatively, these have to live on the same site. Although at some point, JSONP-like functionality might be considered.
 
 <h3>Code:</h3>
 <PRE style="background-color: #eee;">

@@ -3,6 +3,14 @@
 
 <HEAD>
 
+<style>
+span.code {
+	font-family: Courier New;
+	font-size: 90%;
+	color: #00F;
+}
+</style>
+
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
 <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
 
@@ -17,7 +25,8 @@
       processEscapes: true
     },
     "messageStyle" : "none",
-    "HTML-CSS": { availableFonts: ["TeX"] }
+    "HTML-CSS": { availableFonts: ["TeX"] },
+    "delayStartupUntil" : "onload"
   });
 </script>
 <script type="text/javascript"
@@ -29,29 +38,7 @@
 <script type="text/javascript">
 var chartArray = null
 function init() {
-	chartArray = jsonToD3.work();
-	/*
-	var head = document.getElementsByTagName("head")[0]
-	var script = document.createElement("script")
-	script.type = "text/x-mathjax-config";
-	script[(window.opera ? "innerHTML" : "text")] =
-		"MathJax.Hub.Config({\n" +
-		"	extensions: [\"tex2jax.js\"],\n" +
-		"	jax: [\"input/TeX\", \"output/HTML-CSS\"],\n" +
-		"	tex2jax: {\n" +
-		"		inlineMath: [['$','$'], ['\\\\(','\\\\)']],\n" +
-		"		displayMath: [ ['$$','$$'], ['\\\\[','\\\\]']],\n" +
-		"		processEscapes: true\n" +
-		"	},\n" +
-		" 	\"messageStyle\": \"none\",\n" +
-		" 	\"HTML-CSS\": { availableFonts: [\"TeX\"] }\n" +
-		"});"
-	head.appendChild(script);
-	script = document.createElement("script");
-		script.type = "text/javascript";
-		script.src  = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-	head.appendChild(script);
-	*/
+	chartArray = jsonToD3.work()
 }
 </script>	
 
@@ -62,7 +49,7 @@ function init() {
 
 <HR/>
 
-<DIV ALIGN=CENTER>
+<DIV ALIGN=CENTER id="ex1">
 <SCATTERPLOT>
 {
 	"dimensions" : {"width": 800, "height": 400},
@@ -76,7 +63,9 @@ function init() {
 	"legend_offset_x": 0,
 	"legend_offset_y": 0,
 
+	"tooltip_font": "14px sans-serif",
 	"tooltip_color": "#F00",
+	"tooltip_bgcolor": "#500",
 
 	"title": "Charty the SCATTERPLOT ($\\sigma$)",
 	"title_font" : "italic bold 20px Times New Roman",
@@ -92,14 +81,21 @@ function init() {
 			"marker_opacity": 0.6,
 			"marker_radius": 10,
 			"data": [
-				[2000, 50000, "$\\alpha^{\\omega}$"], [2001, 49000, "$\\epsilon\\rightarrow 0$"], [2002, 47500, "${1}/{\\sqrt{n}}$"], [2004, 39750, "Yummy $\\pi$"]
+				[2000, 50000, "$\\alpha^{\\omega}$"], 
+				[2001, 49000, "$\\displaystyle\\lim\\limits_{x\\rightarrow 0} \\frac{\\sin x}{x} = 1$"], 
+				[2002, 47500, "$w^{T}(I-P)^{-1}q^{(j)}$"], 
+				[2004, 39750, "Yummy $\\pi$"]
 			]
 		},
 		{
 			"series_name": "Series $\\beta$",
 			"draw_line": false,
 			"data": [
-				[2000, 30000], [2001, 20000], [2002.5, 23500, "Woo Hoo!!"], [2002.75, 24500], [2003.5, 30750]
+				[2000, 30000], 
+				[2001, 20000], 
+				[2002.5, 23500, "Woo Hoo!!"], 
+				[2002.75, 24500], 
+				[2003.5, 30750]
 			]
 		}
 	]
@@ -108,61 +104,16 @@ function init() {
 </DIV>
 
 <h3>The Chart</h3>
-Note that MathJax has been used for typesetting math.<br><br>
+Points in a data series are usually in the form [<em>x</em>, <em>y</em>], but may be given names as in [<em>x</em>, <em>y</em>, <em>z</em>].<br><br>
 
-Confession: There is a bit of a "width of the DIV" issue, wherein some DIVs in the legend extend further that they should (at least they are not too narrow), causing the fade-in/out of a data series to trigger even when apparently clicking in space.
+MathJax has been used for typesetting math. (The solution is rather hackish for now. But unfortunately that might not change.) Some equations take a bit longer to typeset, unfortunately, try doing a mouseover on the second big blue marker.
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;">
-
-&lt;SCATTERPLOT&gt;
-{
-	"dimensions" : {"width": 800, "height": 400},
-	"margins" : {"top": 20, "right": 25, "bottom": 40, "left": 60},
-	"axes" : {
-		"x_label": "x (a.k.a. $\\chi$)",
-		"y_label": "Upsilon ($\\upsilon$)"
-	},
-
-	"show_legend": true,
-	"legend_offset_x": 0,
-	"legend_offset_y": 0,
-
-	"tooltip_color": "#F00",
-
-	"title": "Charty the SCATTERPLOT ($\\sigma$)",
-	"title_font" : "italic bold 20px Times New Roman",
-	"title_underline" : false,
-
-	"axes_font" : "12px sans-serif",
-	"axes_label_font" : "bold 14px sans-serif",
-	"legend_font" : "20px sans-serif",
-
-	"data_series" : [
-		{
-			"series_name": "Series $\\alpha$",
-			"marker_opacity": 0.6,
-			"marker_radius": 10,
-			"data": [
-				[2000, 50000, "$\\alpha^{\\omega}$"], [2001, 49000, "$\\epsilon\\rightarrow 0$"], [2002, 47500, "${1}/{\\sqrt{n}}$"], [2004, 39750, "Yummy $\\pi$"]
-			]
-		},
-		{
-			"series_name": "Series $\\beta$",
-			"draw_line": false,
-			"data": [
-				[2000, 30000], [2001, 20000], [2002.5, 23500, "Woo Hoo!!"], [2002.75, 24500], [2003.5, 30750]
-			]
-		}
-	]
-}
-&lt;/SCATTERPLOT&gt;
-
-</PRE>
+<PRE style="background-color: #eee;" id="code_ex1"></PRE>
 
 <HR/>
 
-<DIV ALIGN=CENTER>
+<DIV ALIGN=CENTER id="ex2">
 <SCATTERPLOT>
 {
 	"dimensions" : {"width": 800, "height": 400},
@@ -181,34 +132,43 @@ Confession: There is a bit of a "width of the DIV" issue, wherein some DIVs in t
 
 	"marker_opacity": 1,
 	"marker_radius": 5,
-	"marker_border": "#000",
 	"line_width": 5,
 
 	"legend_offset_x": -625,
 	"legend_offset_y": -60,
-
 
 	"data_series" : [
 		{
 			"series_name": "Series A",
 			"line_opacity": 0.3,
 			"data": [
-				["15 Jan 2014", 50023], ["15 Mar 2014", 49080], ["15 Jul 2014", 47500], ["15 Oct 2014", 39750]
+				["15 Jan 2014", 50023], 
+				["15 Mar 2014", 49080], 
+				["15 Jul 2014", 47500], 
+				["15 Oct 2014", 39750]
 			]
 		},
 		{
 			"series_name": "Series B",
 			"use_markers": false,
+			"line_interpolation": "basis",
 			"data": [
-				["15 Jan 2014", 30202], ["15 Mar 2014", 35099], ["15 Jul 2014", 27500], ["15 Oct 2014", 29750]
+				["15 Jan 2014", 30202], 
+				["15 Mar 2014", 35099], 
+				["15 Jul 2014", 27500], 
+				["15 Oct 2014", 29750]
 			]
 		},
 		{
 			"series_name": "Series C",
 			"line_opacity": 0.7,
 			"marker_opacity": 1,
+			"line_interpolation": "step-before",
 			"data": [
-				["15 Jan 2014", 30102], ["15 Mar 2014", 34599], ["15 Jun 2014", 27300], ["15 Sep 2014", 31750]
+				["15 Jan 2014", 30102], 
+				["15 Mar 2014", 34599], 
+				["15 Jun 2014", 27300], 
+				["15 Sep 2014", 31750]
 			]
 		}
 	]
@@ -217,68 +177,14 @@ Confession: There is a bit of a "width of the DIV" issue, wherein some DIVs in t
 </DIV>
 
 <h3>The Chart</h3>
-The legend can be shifted and the axes can be formatted (see <a href="https://github.com/mbostock/d3/wiki/Formatting" target=_blank>this</a> for more info). No biggie.
+The legend can be shifted and the axes can be formatted (see <a href="https://github.com/mbostock/d3/wiki/Formatting" target=_blank>this</a> for more info). And the marker borders can be changed. (Apologies for the ugliness.)
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;">
-
-&lt;SCATTERPLOT&gt;
-{
-	"dimensions" : {"width": 800, "height": 400},
-	"margins" : {"top": 20, "right": 40, "bottom": 40, "left": 60},
-	"tooltip_font" : "10px Times New Roman",
-
-	"title": "Some SCATTERPLOT (with shifted legend)",
-	"axes" : {
-		"x_label": "Date",
-		"y_label": "Something",
-		"has_datetime_x_axis" : true,
-		"x_axis_format" : "%B %Y",
-		"y_min": 20000,
-		"y_axis_format" : "$,g"
-	},
-
-	"marker_opacity": 1,
-	"marker_radius": 5,
-	"marker_border": "#000",
-	"line_width": 5,
-
-	"legend_offset_x": -625,
-	"legend_offset_y": -60,
-
-
-	"data_series" : [
-		{
-			"series_name": "Series A",
-			"line_opacity": 0.3,
-			"data": [
-				["15 Jan 2014", 50023], ["1 Mar 2014", 49080], ["1 Jul 2014", 47500], ["1 Oct 2014", 39750]
-			]
-		},
-		{
-			"series_name": "Series B",
-			"use_markers": false,
-			"data": [
-				["15 Jan 2014", 30202], ["1 Mar 2014", 35099], ["1 Jul 2014", 27500], ["13 Oct 2014", 29750]
-			]
-		},
-		{
-			"series_name": "Series C",
-			"line_opacity": 0.7,
-			"marker_opacity": 1,
-			"data": [
-				["1 Jan 2014", 30102], ["15 Mar 2014", 34599], ["2 Jun 2014", 27300], ["5 Sep 2014", 31750]
-			]
-		}
-	]
-}
-&lt;/SCATTERPLOT&gt;
-
-</PRE>
+<PRE style="background-color: #eee;" id="code_ex2"></PRE>
 
 <HR/>
 
-<DIV ALIGN=CENTER>
+<DIV ALIGN=CENTER id="ex3">
 <BUBBLEPLOT>
 {
 	"title": "$\\Omega$-Bubbles (Tweaking the Axis Tick Counts Approximately)",
@@ -325,57 +231,260 @@ The legend can be shifted and the axes can be formatted (see <a href="https://gi
 </DIV>
 
 <h3>The Chart</h3>
-Bubble plots... yay?
+Bubble plots... yay? Note the extra parameter <em>z</em> in the series ([<em>x</em>, <em>y</em>, <em>z</em>] or [<em>x</em>, <em>y</em>, <em>z</em>, <em>name</em>], and also <em>bubble_scale</em> in the chart definition. Bubble radius = <em>z</em> &times; <em>bubble_scale</em>.
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;">
+<PRE style="background-color: #eee;" id="code_ex3"></PRE>
+<HR/>
 
-&lt;BUBBLEPLOT&gt;
+<DIV ALIGN=CENTER id="ex4">
+<SCATTERPLOT>
 {
-	"title": "$\\Omega$-Bubbles (Tweaking the Axis Tick Counts Approximately)",
-	"title_font" : "bold 20px Helvetica",
+	"dimensions" : {"width": 800, "height": 400},
+	"margins" : {"top": 20, "right": 180, "bottom": 40, "left": 60},
+	"tooltip_font" : "10px Times New Roman",
 
+	"title": "Some Coarsely Sampled $\\sin$ Curves)",
 	"axes" : {
-		"x_label": "Some Covariate",
-		"y_label": "Population?",
-		"y_min": 40000,
-		"y_max": 50000,
-		"x_ticks": 6,
-		"y_ticks": 18
+		"x_label": "$x$",
+		"y_label": "$\\sin(\\pi x)$",
+		"x_min": 0,
+		"x_max": 2,
+		"y_min": -1,
+		"y_max": 1,
+		"y_axis_format": ",g",
+		"x_ticks": 20
 	},
 
-	"dimensions" : {"width": 800, "height": 400},
-	"margins" : {"top": 30, "right": 25, "bottom": 40, "left": 60},
-	"show_legend": true,
-	"bubble_scale": 30,
-	"marker_opacity": 0.7,
+	"use_markers": false,
+	"line_width": 2,
+	"initially_hidden": true,
+
 	"data_series" : [
 		{
-			"series_name": "Series A",
+			"series_name": "Sample Points",
+			"use_markers": true,
+			"initially_hidden": false,
 			"data": [
-				[2000, 44000, 1, "Opps..."],
-				[2001, 49000, 0.5, "I..."],
-				[2002, 47500, 0.25, "did..."],
-				[2003, 42500, 0.25, "it..."],
-				[2004, 45500, 0.5, "again..."]
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
 			]
 		},
 		{
-			"series_name": "Series B",
+			"series_name": "Method: linear",
+			"line_interpolation": "linear",
+			"initially_hidden": false,
 			"data": [
-				[2001, 43000, 0.5, "Shine ($\\alpha$)"],
-				[2002, 42500, 0.25, "Bright ($\\alpha$)"],
-				[2003, 45500, 0.25, "Like ($\\alpha$)"],
-				[2003.5, 47500, 0.5, "A ($\\alpha$)"],
-				[2005, 43500, 0.5, "Diamond ($\\alpha$)"]
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: step-before",
+			"line_interpolation": "step-before",
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: step-after",
+			"line_interpolation": "step-after",
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: basis",
+			"line_interpolation": "basis",
+			"initially_hidden": false,
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: basis-open",
+			"line_interpolation": "basis-open",
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: basis-closed",
+			"line_interpolation": "basis-closed",
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: bundle",
+			"line_interpolation": "bundle",
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: cardinal",
+			"line_interpolation": "cardinal",
+			"initially_hidden": false,
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: cardinal-open",
+			"line_interpolation": "cardinal-open",
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: cardinal-closed",
+			"line_interpolation": "cardinal-closed",
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Method: monotone",
+			"line_interpolation": "monotone",
+			"data": [
+				[0, 0],
+				[0.25, 0.707],
+				[0.5, 1],
+				[0.75, 0.707],
+				[1, 0],
+				[1.25, -0.707],
+				[1.5, -1],
+				[1.75, -0.707],
+				[2, 0]
+			]
+		},
+		{
+			"series_name": "Series Not Used",
+			"use_series_in_chart": false,
+			"data": [
+				[-1, 0],
+				[2, 1]
 			]
 		}
 	]
 }
-&lt;/BUBBLEPLOT&gt;
+</SCATTERPLOT>	
+</DIV>
 
-</PRE>
+<h3>The Chart</h3>
+Here are some an extremely coarsly sampled and overlaid <em>sin</em> plots with <a href="https://github.com/mbostock/d3/wiki/SVG-Shapes#line_interpolate" target=_blank>different interpolation formats</a>. <br/><br/>
+
+Observe that some series can come initially hidden too. <br/><br/>
+
+Note also the series that is not shown at all (see code; look for <span class=code>use_series_in_chart</span>; validation is still run on the series though). <br/><br/>
+
+Note also the inheritance of the <span class=code>initially_hidden</span> property for each series.
+
+<h3>Code:</h3>
+<PRE style="background-color: #eee;" id="code_ex4"></PRE>
+
 <HR/>
 
+
+<script>
+// Before onload...
+var example_indices = [1,2,3,4]
+for (var i = 0; i < example_indices.length; i++) {
+	var ex_id = "ex" + example_indices[i]
+	var pre_id = "code_ex" + example_indices[i]
+	var codeElem = document.getElementById(ex_id)
+	var codeDisplayElem = document.getElementById(pre_id)
+	codeDisplayElem.innerText = "\n" + codeElem.innerHTML + "\n"
+}
+</script>
+
 </BODY>
+
 </HTML>
