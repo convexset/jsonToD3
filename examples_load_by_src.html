@@ -1,0 +1,66 @@
+<HTML>
+<META CHARSET="utf-8">
+
+<HEAD>
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
+
+<script type="text/javascript" src="jsonToD3.js"></script>	
+
+<script type="text/javascript">
+var chartArray = null
+function init() {
+	chartArray = jsonToD3.work();
+
+	var head = document.getElementsByTagName("head")[0]
+	var script = document.createElement("script")
+	script.type = "text/x-mathjax-config";
+	script[(window.opera ? "innerHTML" : "text")] =
+		"MathJax.Hub.Config({\n" +
+		"	extensions: [\"tex2jax.js\"],\n" +
+		"	jax: [\"input/TeX\", \"output/HTML-CSS\"],\n" +
+		"	tex2jax: {\n" +
+		"		inlineMath: [['$','$'], ['\\\\(','\\\\)']],\n" +
+		"		displayMath: [ ['$$','$$'], ['\\\\[','\\\\]']],\n" +
+		"		processEscapes: true\n" +
+		"	},\n" +
+		" 	\"messageStyle\": \"none\",\n" +
+		" 	\"HTML-CSS\": { availableFonts: [\"TeX\"] }\n" +
+		"});"
+	head.appendChild(script);
+	script = document.createElement("script");
+		script.type = "text/javascript";
+		script.src  = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+	head.appendChild(script);
+}
+</script>	
+
+</HEAD>
+<BODY onLoad="init()">
+
+<H1 ALIGN=CENTER>Various Load-by-SRC Examples for jsonToD3.js</H1>
+
+<HR/>
+
+<DIV ALIGN=CENTER>
+<SCATTERPLOT SRC="./examples/hdbRental_Aug2014.json"></SCATTERPLOT>	
+</DIV>
+
+<h3>The Chart</h3>
+Things are a bit cluttered. Try clicking on the legend to hide some series.<br><br>
+
+For details on the points, try hovering the mouse cursor over some of them.<br><br>
+
+Also note that data is being loaded from some other file in contrast to the examples in <A HREF="examples_inline.html">examples_inline.html</A>.
+
+<h3>Code:</h3>
+<PRE style="background-color: #eee;">
+
+&lt;SCATTERPLOT SRC="./examples/hdbRental_Aug2014.json"&gt;&lt;/SCATTERPLOT&gt;
+
+</PRE>
+<HR/>
+
+</BODY>
+</HTML>
