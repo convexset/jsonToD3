@@ -15,12 +15,13 @@ organized...) But I'll get to that at some point...
 
 
 Features:
-- Works nicely with Chrome... (And what might that phrasing suggest...)
 - Does reasonably nice scatter plots (from <SCATTERPLOT>) and bubble plots (from <BUBBLEPLOT>)
-- Processes chart info inline (in HTML tags) or loaded from somewhere specified by the SRC attribute.
-- Allows hiding of data series if things are too cluttered (click on the legend)
+- Processes chart info inline (in HTML tags) or loaded from somewhere specified by the SRC attribute
+- Allows hiding of data series if things are too cluttered (mouse over the legend to find out more)
 - Allows from LaTeX markup in the title, axis labels, legend labels and tool tips via
-  barely passable integration with MathJax.
+  barely passable integration with MathJax
+- Setting "inheritance" from the chart to component data series (see below)
+- Seems to work reasonably well in Chrome, FireFox and Safari (for everything else, there's MasterCard...)
 
 
 Settings:
@@ -92,9 +93,6 @@ has_datetime_x_axis
   data series level, the data series will inherit the chart level setting. Whatever is not set that the chart level is
   assumed to take the default. (I mean... that's what default means...)
 
-
-Now, on the Chrome friendliness, the issue really is whether I really want LaTeX typesetting in the title, axes labels and
-the legend. If I give that up, it should work well elsewhere.
 */
 
 /*
