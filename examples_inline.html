@@ -483,7 +483,7 @@ for (var i = 0; i < example_indices.length; i++) {
 	var pre_id = "code_ex" + example_indices[i]
 	var codeElem = document.getElementById(ex_id)
 	var codeDisplayElem = document.getElementById(pre_id)
-	codeDisplayElem.innerText = "\n" + codeElem.innerHTML + "\n"
+	codeDisplayElem.appendChild(document.createTextNode("\n" + codeElem.innerHTML + "\n"))
 }
 </script>
 
