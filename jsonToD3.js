@@ -100,9 +100,7 @@ the legend. If I give that up, it should work well elsewhere.
 /*
 
 TO DO:
-- force non foreign parent labels: visiblity in firefox... 
-- figure out what the hell is wrong with offsetParent
-- resolve div pollution on failure to add chart (title, x_label, y_label, tooltip, sneakyDiv, legend elems)
+- Resolve div pollution on failure to add chart (e.g.: title, x_label, y_label, tooltip, sneakyDiv, legend elems)
 */
 
 var jsonToD3 = {
@@ -157,6 +155,10 @@ var jsonToD3 = {
 
 	get_series_key: function(unique_tag, s) {
 		return unique_tag + "|" + jsonToD3.slugify(s)
+	},
+
+	get_title_tag: function(unique_tag) {
+		return 'tag_' + unique_tag + 'title'
 	},
 
 	get_node_tag: function(unique_tag, s) {
@@ -964,7 +966,7 @@ var jsonToD3 = {
 					var tooltip_text = "Click the title to show all series."
 
 					sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + ";")
-					sneakyDiv.innerText = tooltip_text
+					sneakyDiv.innerHTML = tooltip_text
 
 					tooltip
 						.style("width", sneakyDiv.clientWidth + 2)
@@ -981,6 +983,7 @@ var jsonToD3 = {
 
 				title = d3.select(unique_tag_element).append("div")
 								.attr("class", "title")
+								.attr("id", jsonToD3.get_title_tag(unique_tag))
 								.style("position", "absolute")
 								.style("width", inner_width)
 								.style("height", "auto")
@@ -989,20 +992,20 @@ var jsonToD3 = {
 								.style("vertical-align", "top")
 								.style("text-decoration", chart_info.title_underline ? "underline" : "none")
 								.style("cursor", "pointer")
-								.style("left", unique_tag_element.offsetLeft + svg[0][0].offsetLeft + margins.left)
+								.style("left", unique_tag_element.offsetLeft + margins.left)
 								.style("top", unique_tag_element.offsetTop)
 								.text(chart_info.title)
 								.on("click", showAllSeries)
 								.on("mouseover", titleMouseOver)
 								.on("mousemove", moveTooltipOnMouseMove)
-								.on("mouseout", fadeToolTip)								
-								.style("background-color", "#00F") // ****** DEBUG *******
-								.style("opacity", 0.5)  // ****** DEBUG *******
+								.on("mouseout", fadeToolTip)
+				if (jsonToD3.DEVELOPMENT) {title.style("background-color", "#00F").style("opacity", 0.8)} // ****** DEBUG *******
 
 				updateFunctions["positionTitle"] = function() {
+					var titleTag = document.getElementById(jsonToD3.get_title_tag(unique_tag))
 					title
-						.style("left", unique_tag_element.offsetLeft + svg[0][0].offsetLeft + margins.left)
-						.style("top", unique_tag_element.offsetTop)					
+						.style("left", unique_tag_element.offsetLeft + margins.left)
+						.style("top", unique_tag_element.offsetTop + margins.top - titleTag.clientHeight - 4)
 				}
 				updateFunctions["positionTitle"]()
 			}
@@ -1113,9 +1116,12 @@ var jsonToD3 = {
 							.style("fill", "#000") // X Tick Labels
 							.style("font", chart_info.axes_font)
 
+			// sneakyDiv for browsers which seem to not be able to give clientWidth and clientHeight properly
+			sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.axes_font + ";")
 			var getXAxisHeight = function (node) {
 				try {
-					return Math.abs(node.childNodes[0].y2.baseVal.value - node.childNodes[0].y1.baseVal.value) + 1 + node.childNodes[1].clientHeight
+					sneakyDiv.innerHTML = node.childNodes[1].textContent
+					return Math.abs(node.childNodes[0].y2.baseVal.value - node.childNodes[0].y1.baseVal.value) + 1 + Math.max(node.childNodes[1].clientHeight, sneakyDiv.clientHeight)
 				} catch (e) {
 					return -1
 				}
@@ -1131,13 +1137,12 @@ var jsonToD3 = {
 								.style("text-align", "center")
 								.style("vertical-align", "top")
 								.text(chart_info.axes.x_label)
-								.style("background-color", "#00F") // ****** DEBUG *******
-								.style("opacity", 0.5)  // ****** DEBUG *******
+			if (jsonToD3.DEVELOPMENT) {x_axis_label.style("background-color", "#00F").style("opacity", 0.8)} // ****** DEBUG *******
 
 			updateFunctions["positionXAxisLabel"] = function() {
 				x_axis_label
-					.style("left", unique_tag_element.offsetLeft + svg[0][0].offsetLeft + margins.left)
-					.style("top", unique_tag_element.offsetTop + svg[0][0].offsetTop + margins.top + inner_height + vert_padding_x_axis)
+					.style("left", unique_tag_element.offsetLeft + margins.left)
+					.style("top", unique_tag_element.offsetTop + margins.top + inner_height + vert_padding_x_axis)
 			}
 			updateFunctions["positionXAxisLabel"]()
 
@@ -1148,14 +1153,18 @@ var jsonToD3 = {
 						.style("fill", "#000") // Y Tick Labels
 						.style("font", chart_info.axes_font)
 
+			// sneakyDiv for browsers which seem to not be able to give clientWidth and clientHeight properly
+			sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.axes_font + ";")
 			var getYAxisWidth = function (node) {
 				try {
-					return Math.abs(node.childNodes[0].x2.baseVal.value - node.childNodes[0].x1.baseVal.value) + 1 + node.childNodes[1].clientWidth
+					sneakyDiv.innerHTML = node.childNodes[1].textContent
+					return Math.abs(node.childNodes[0].x2.baseVal.value - node.childNodes[0].x1.baseVal.value) + 1 + Math.max(node.childNodes[1].clientWidth, sneakyDiv.clientWidth)
 				} catch (e) {
 					return -1
 				}
 			}
 			var horiz_padding_y_axis = jsonToD3.reduce(Math.max, jsonToD3.map(getYAxisWidth, y_axis[0][0].childNodes), -Infinity)
+
 			sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.axes_label_font + ";")
 			sneakyDiv.innerHTML = chart_info.axes.y_label
 			var y_axis_textHeight = sneakyDiv.clientHeight
@@ -1170,15 +1179,18 @@ var jsonToD3 = {
 								.style("height", "auto")
 								.style("font", chart_info.axes_label_font)
 								.style("transform", "rotate(-90deg)")
+								.style("-webkit-transform", "rotate(-90deg)")
+								.style("-moz-transform", "rotate(-90deg)")
+								.style("-o-transform", "rotate(-90deg)")
+								.style("-ms-transform", "rotate(-90deg)")
 								.style("transform-origin", "0% 0%")
 								.text(chart_info.axes.y_label)
-								.style("background-color", "#00F") // ****** DEBUG *******
-								.style("opacity", 0.5)  // ****** DEBUG *******
+			if (jsonToD3.DEVELOPMENT) {y_axis_label.style("background-color", "#00F").style("opacity", 0.8)} // ****** DEBUG *******
 
 			updateFunctions["positionYAxisLabel"] = function() {
 				y_axis_label
-					.style("left", unique_tag_element.offsetLeft + svg[0][0].offsetLeft + margins.left - horiz_padding_y_axis - y_axis_textHeight - 4)
-					.style("top", unique_tag_element.offsetTop + svg[0][0].offsetTop + margins.top + inner_height)
+					.style("left", unique_tag_element.offsetLeft + margins.left - horiz_padding_y_axis - y_axis_textHeight - 4)
+					.style("top", unique_tag_element.offsetTop + margins.top + inner_height)
 			}
 			updateFunctions["positionXAxisLabel"]()
 
@@ -1312,20 +1324,40 @@ var jsonToD3 = {
 					.on("mousemove", moveTooltipOnMouseMove)
 					.on("mouseout", fadeToolTip)
 
-				var legend_labels = legend.append("foreignObject")
-						                .attr("class","label")
-						                .append("xhtml:div") 
-										.attr("class", "legend")
-										.style("position", "absolute")
-										.style("text-align", "right")
-										.style("vertical-align", "middle")
-										.style("cursor", "pointer")
-										.on("click", toggleFadeSeries)
-										.on("contextmenu", function(d){ d3.event.preventDefault(); fadeOtherSeriesShowThisOnly(d); })
-										.on("mouseover", legendMouseOver)
-										.on("mousemove", moveTooltipOnMouseMove)
-										.on("mouseout", fadeToolTip)
-				
+				var legend_labels = []
+
+				var getLegendTextCallBacks = function(d) {
+					var name = d.toString()
+					var CBs = {}
+					CBs["click"] = function() {toggleFadeSeries(name)}
+					CBs["contextmenu"] = function() {d3.event.preventDefault(); fadeOtherSeriesShowThisOnly(name);}
+					CBs["mouseover"] = function() {legendMouseOver(name)}
+					return CBs
+				}
+
+				// This hack is used because somehow color.domain() gives all the series, but .enter() leaves out the first. No idea why.
+				for (var i = 0; i < chart_info.data_series.length; i++) {
+					var d = chart_info.data_series[i].series_name
+					var CBs = getLegendTextCallBacks(d)
+
+					var legend_label = d3.select(unique_tag_element)
+									.append("div")
+									.attr("class", "legend")
+									.style("position", "absolute")
+									.style("text-align", "right")
+									.style("vertical-align", "middle")
+									.style("cursor", "pointer")
+									.attr("id", jsonToD3.get_legend_div_tag(unique_tag, d)) // assign ID
+									.on("click", CBs["click"])
+									.on("contextmenu", CBs["contextmenu"])
+									.on("mouseover", CBs["mouseover"])
+									.on("mousemove", moveTooltipOnMouseMove)
+									.on("mouseout", fadeToolTip)
+					if (jsonToD3.DEVELOPMENT) {legend_label.style("background-color", "#00F").style("opacity", 0.8)} // ****** DEBUG *******
+
+					legend_labels.push(legend_label)
+				}
+
 				updateFunctions["legend"] = function() {
 					legendWidth = -Infinity
 
@@ -1334,32 +1366,34 @@ var jsonToD3 = {
 
 					sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.legend_font + ";")
 
-					legend_labels
-						.style("width", function(d) { 
-							sneakyDiv.innerHTML=d
-							jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
+					for (var i = 0; i < chart_info.data_series.length; i++) {
+						var d = chart_info.data_series[i].series_name
+						var legend_label = legend_labels[i]
 
-							divHTML[d] = sneakyDiv.innerHTML
-							divWidth[d] = sneakyDiv.clientWidth
+						sneakyDiv.innerHTML=d
+						jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
 
-							return divWidth[d]
-						})
+						divHTML[d] = sneakyDiv.innerHTML
+						divWidth[d] = sneakyDiv.clientWidth + 2
 
-					legend_labels
-						.style("left", function(d) { 
-							// make sure divWidth is already populated
-							legendWidth = legendWidth > divWidth[d] + 6 + legendSquareSide ? legendWidth : divWidth[d] + 6 + legendSquareSide
-							return (svg[0][0].offsetLeft + legend_shift_x + inner_width - divWidth[d] + margins.left + margins.right - legendSquareSide - 6 - legendBorderShift) 
-						})
-						.style("top", function(d, i) {
-							return (legend_shift_y + svg[0][0].offsetTop + margins.top + 2 + i * legendSquareSidePlus + legendBorderShift) 
-						})
-						.style("font", chart_info.legend_font)
-						.attr("id", function(d) {return jsonToD3.get_legend_div_tag(unique_tag, d)}) // assign ID
-						.html(function(d) { 
-							// make sure divHTML is already populated
-							return divHTML[d]
-						})
+						legend_label.style("width", divWidth[d])
+					}	
+
+					for (var i = 0; i < chart_info.data_series.length; i++) {
+						var d = chart_info.data_series[i].series_name
+						var legend_label = legend_labels[i]
+
+						legendWidth = legendWidth > divWidth[d] + 6 + legendSquareSide ? legendWidth : divWidth[d] + 6 + legendSquareSide
+
+						var leftPos = unique_tag_element.offsetLeft + legend_shift_x + margins.left + inner_width + margins.right - divWidth[d] - legendSquareSide - 6 - legendBorderShift
+						var topPos = unique_tag_element.offsetTop + legend_shift_y + margins.top + 2 + (i * legendSquareSidePlus) + legendBorderShift
+
+						legend_label
+							.style("left", leftPos)
+							.style("top", topPos)
+							.style("font", chart_info.legend_font)
+							.html(divHTML[d])
+					}
 
 					legend_bg.attr("x", function() {return inner_width + margins.right + legend_shift_x - legendWidth - 2*legendBorderShift + 1})
 							.attr("y", 0 + legend_shift_y + 1)
@@ -1410,10 +1444,10 @@ var jsonToD3 = {
 
 		// Post Admin
 		var seriesNames = []
-		sneakyDiv.innerText = chart_info.title + " " + chart_info.x_label + chart_info.y_label
+		sneakyDiv.innerHTML = chart_info.title + " " + chart_info.x_label + chart_info.y_label
 		for (var i = 0; i < chart_info.data_series.length; i++) {
 			seriesNames.push(chart_info.data_series[i].series_name)
-			sneakyDiv.innerText += " " + chart_info.data_series[i].series_name
+			sneakyDiv.innerHTML += " " + chart_info.data_series[i].series_name
 
 			if (chart_info.data_series[i].initially_hidden) {
 				managementFunctions["showOrHideSeries"](chart_info.data_series[i].series_name, false)
