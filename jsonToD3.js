@@ -825,7 +825,8 @@ var jsonToD3 = {
 
 		var updateFunctions = {}
 		var managementFunctions = {}
-		var hackishUpdateFunctions = {}
+		var fewTimeUpdateFunctions = {}
+		var divLabels = {}
 
 		var svg = null
 		try {
@@ -1008,6 +1009,7 @@ var jsonToD3 = {
 						.style("top", unique_tag_element.offsetTop + margins.top - titleTag.clientHeight - 4)
 				}
 				updateFunctions["positionTitle"]()
+				divLabels["title"] = title
 			}
 
 
@@ -1145,6 +1147,7 @@ var jsonToD3 = {
 					.style("top", unique_tag_element.offsetTop + margins.top + inner_height + vert_padding_x_axis)
 			}
 			updateFunctions["positionXAxisLabel"]()
+			divLabels["x_axis_label"] = x_axis_label
 
 			// y-axis
 			var y_axis = svg.append("g")
@@ -1184,6 +1187,8 @@ var jsonToD3 = {
 								.style("-o-transform", "rotate(-90deg)")
 								.style("-ms-transform", "rotate(-90deg)")
 								.style("transform-origin", "0% 0%")
+								.style("-webkit-transform-origin", "0% 0%")
+								.style("-ms-transform-origin", "0% 0%")
 								.text(chart_info.axes.y_label)
 			if (jsonToD3.DEVELOPMENT) {y_axis_label.style("background-color", "#00F").style("opacity", 0.8)} // ****** DEBUG *******
 
@@ -1192,7 +1197,8 @@ var jsonToD3 = {
 					.style("left", unique_tag_element.offsetLeft + margins.left - horiz_padding_y_axis - y_axis_textHeight - 4)
 					.style("top", unique_tag_element.offsetTop + margins.top + inner_height)
 			}
-			updateFunctions["positionXAxisLabel"]()
+			updateFunctions["positionYAxisLabel"]()
+			divLabels["y_axis_label"] = y_axis_label
 
 			svg.selectAll(".axis line")
 					.style("stroke", "#000") // Ticks
@@ -1405,6 +1411,7 @@ var jsonToD3 = {
 							.style("opacity", 0.15)
 				}
 				updateFunctions["legend"]()
+				divLabels["legend_labels"] = legend_labels
 
 
 				// tool tip... so it's on top
@@ -1455,14 +1462,17 @@ var jsonToD3 = {
 		}
 		jsonToD3.doMathJaxQueueIfPossible(sneakyDiv)
 
-		return {
-				"seriesNames": seriesNames,
-				"svg": svg, "svgParent": svgParent,
-				"chart_info": chart_info, "tooltip": tooltip,
-				"hackishUpdateFunctions": hackishUpdateFunctions,
-				"updateFunctions": updateFunctions,
-				"managementFunctions": managementFunctions
-			}
+		var ret = {
+					"seriesNames": seriesNames,
+					"svg": svg, "svgParent": svgParent,
+					"chart_info": chart_info, "tooltip": tooltip,
+					"fewTimeUpdateFunctions": fewTimeUpdateFunctions,
+					"updateFunctions": updateFunctions,
+					"managementFunctions": managementFunctions
+				}
+
+		if (jsonToD3.DEVELOPMENT) { ret["divLabels"] = divLabels}
+		return ret
 	},
 
 	processTag: function(plotTag) {
@@ -1538,21 +1548,21 @@ var jsonToD3 = {
 		window.setTimeout(runUpdateFunctions, 500)
 
 		var number_of_times_left_to_run_hackish_update_functions = 5
-		var runHackishUpdateFunctions = null
-		runHackishUpdateFunctions = function() {
+		var runFewTimeUpdateFunctions = null
+		runFewTimeUpdateFunctions = function() {
 			if (jsonToD3.canMathJaxTypeSet()) {
 				number_of_times_left_to_run_hackish_update_functions--
 				for (var i = 0; i < chartArray.length; i++) {
-					for (var k in chartArray[i]["updateFunctions"]) {
-						chartArray[i]["updateFunctions"][k]()
+					for (var k in chartArray[i]["fewTimeUpdateFunctions"]) {
+						chartArray[i]["fewTimeUpdateFunctions"][k]()
 					}
 				}
 			}
 			if (number_of_times_left_to_run_hackish_update_functions > 0) {
-				window.setTimeout(runHackishUpdateFunctions, 5000)
+				window.setTimeout(runFewTimeUpdateFunctions, 5000)
 			}
 		}
-		//window.setTimeout(runHackishUpdateFunctions, 1000)
+		window.setTimeout(runFewTimeUpdateFunctions, 1000)
 
 		return chartArray;
 	}
