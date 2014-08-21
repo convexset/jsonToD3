@@ -116,7 +116,7 @@ MathJax has been used for typesetting math. (The solution is rather hackish for 
 <DIV ALIGN=CENTER id="ex2">
 <SCATTERPLOT>
 {
-	"dimensions" : {"width": 800, "height": 400},
+	"dimensions" : {"width": 900, "height": 400},
 	"margins" : {"top": 20, "right": 40, "bottom": 40, "left": 60},
 	"tooltip_font" : "10px Times New Roman",
 
@@ -134,13 +134,14 @@ MathJax has been used for typesetting math. (The solution is rather hackish for 
 	"marker_radius": 5,
 	"line_width": 5,
 
-	"legend_offset_x": -625,
+	"legend_offset_x": -725,
 	"legend_offset_y": -60,
 
 	"data_series" : [
 		{
 			"series_name": "Series A",
 			"line_opacity": 0.3,
+			"marker_border_color": "#F00",
 			"data": [
 				["15 Jan 2014", 50023], 
 				["15 Mar 2014", 49080], 
@@ -177,7 +178,7 @@ MathJax has been used for typesetting math. (The solution is rather hackish for 
 </DIV>
 
 <h3>The Chart</h3>
-The legend can be shifted and the axes can be formatted (see <a href="https://github.com/mbostock/d3/wiki/Formatting" target=_blank>this</a> for more info). And the marker borders can be changed. (Apologies for the ugliness.)
+The legend can be shifted and the axes can be formatted (see <a href="https://github.com/mbostock/d3/wiki/Formatting" target=_blank>this</a> for more info). And the marker border colors can be changed. (Apologies for the ugliness of Series A.)
 
 <h3>Code:</h3>
 <PRE style="background-color: #eee;" id="code_ex2"></PRE>

@@ -95,10 +95,19 @@ has_datetime_x_axis
 
 Now, on the Chrome friendliness, the issue really is whether I really want LaTeX typesetting in the title, axes labels and
 the legend. If I give that up, it should work well elsewhere.
+*/
 
+/*
+
+TO DO:
+- force non foreign parent labels: visiblity in firefox... 
+- figure out what the hell is wrong with offsetParent
+- resolve div pollution on failure to add chart (title, x_label, y_label, tooltip, sneakyDiv, legend elems)
 */
 
 var jsonToD3 = {
+	DEVELOPMENT: false,
+
 	valid_plot_tags: ["SCATTERPLOT", "BUBBLEPLOT"],
 
 	parseTextAsRawJSON: function(s) {
@@ -806,14 +815,16 @@ var jsonToD3 = {
 			var data_markers = chart_info.all_data_markers
 			var data_lines = chart_info.all_data_lines
 
-			var unique_tag = "JSON_TO_DTHREE_CHARTAREA" + (++jsonToD3.plotIdx).toString()
-			while (document.getElementsByTagName(unique_tag).length > 0) {
+			var unique_tag = "JSON_TO_D3_CHARTAREA" + (++jsonToD3.plotIdx).toString()
+			while (document.getElementById(unique_tag) != null) {
 				unique_tag = "JSON_TO_DTHREE_CHARTAREA" + (++jsonToD3.plotIdx).toString()
 			}
 
 			// Setup canvas 
-			var svgParent = plotTag.appendChild(document.createElement(unique_tag))
-			var svg = d3.select(unique_tag).append("svg")
+			var unique_tag_element = document.createElement("DIV")
+			unique_tag_element.setAttribute("id", unique_tag)
+			var svgParent = plotTag.appendChild(unique_tag_element)
+			var svg = d3.select(unique_tag_element).append("svg")
 							.style("position", "relative")
 							.style("width", width)
 							.style("height", height)
@@ -837,7 +848,7 @@ var jsonToD3 = {
 
 			tooltip_padding = Math.max(2,Math.ceil(textHeight/3.0))
 
-			var tooltip = d3.select(unique_tag).append("div")
+			var tooltip = d3.select(unique_tag_element).append("div")
 								.attr("class", "tooltip")
 								.style("opacity", 0)
 								.style("position", "absolute")
@@ -855,7 +866,6 @@ var jsonToD3 = {
 			var getSeriesKey = function(d) {
 				return jsonToD3.get_series_key(unique_tag, d)
 			}
-			managementFunctions["getSeriesKey"] = getSeriesKey
 
 		    // Various Event Handlers
 			var fadeToolTip = function() {
@@ -964,8 +974,7 @@ var jsonToD3 = {
 								.attr("y", -8)
 				//*/
 
-				title = svg.append("foreignObject")
-				                .append("xhtml:div")
+				title = d3.select(unique_tag_element).append("div")
 								.attr("class", "title")
 								.style("position", "absolute")
 								.style("width", inner_width)
@@ -974,11 +983,16 @@ var jsonToD3 = {
 								.style("text-align", "center")
 								.style("vertical-align", "top")
 								.style("text-decoration", chart_info.title_underline ? "underline" : "none")
-								.html(chart_info.title)
-								.style("left", svg[0][0].offsetLeft + margins.left)
-								.style("top", 0)
 								.style("cursor", "pointer")
+								.html(chart_info.title)
 								.on("click", showAllSeries)
+
+				updateFunctions['title'] = function() {
+					title
+						.style("left", svg[0][0].offsetParent.offsetLeft + svg[0][0].offsetLeft + margins.left)
+						.style("top", svg[0][0].offsetParent.offsetTop)
+				}
+				updateFunctions['title']()
 			}
 
 
@@ -1373,7 +1387,11 @@ var jsonToD3 = {
 
 		} catch(error) {
 			plotTag.setAttribute('error', "Unable to generate chart canvas.")
-			return null
+			if (jsonToD3.DEVELOPMENT) {
+				throw error
+			} else {
+				return null
+			}
 		}
 
 		// Post Admin
