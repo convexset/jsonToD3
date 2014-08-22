@@ -47,6 +47,8 @@ function init() {
 
 <H1 ALIGN=CENTER>Various Inline Examples for jsonToD3.js</H1>
 
+In the examples here, data is described in-line in contrast to the examples in <A HREF="examples_load_by_src.html">examples_load_by_src.html</A> where they are loaded from an external file specified by the <span class=code>SRC</span> attribute. Check those examples out. They will be of interest to most, especially Singaporeans.
+
 <HR/>
 
 <DIV ALIGN=CENTER id="ex1">
@@ -483,7 +485,7 @@ for (var i = 0; i < example_indices.length; i++) {
 	var pre_id = "code_ex" + example_indices[i]
 	var codeElem = document.getElementById(ex_id)
 	var codeDisplayElem = document.getElementById(pre_id)
-	codeDisplayElem.appendChild(document.createTextNode("\n" + codeElem.innerHTML + "\n"))
+	codeDisplayElem.appendChild(document.createTextNode("\n" + codeElem.innerHTML.trim() + "\n\n"))
 }
 </script>
 

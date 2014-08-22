@@ -38,9 +38,11 @@ function init() {
 
 <H1 ALIGN=CENTER>Various Load-by-SRC Examples for jsonToD3.js</H1>
 
+In the examples here, data is being loaded from some other file in contrast to the examples in <A HREF="examples_inline.html">examples_inline.html</A>. Tentatively, these have to live on the same site. Although at some point, JSONP-like functionality might be considered.
+
 <HR/>
 
-<DIV ALIGN=CENTER>
+<DIV ALIGN=CENTER id="ex1">
 <SCATTERPLOT SRC="./examples/hdbRental_Aug2014.json"></SCATTERPLOT>	
 </DIV>
 
@@ -51,17 +53,11 @@ For details on the points, try hovering the mouse cursor over some of them.<br><
 
 Note also that the translucent points lead to something of a empirical density plot. (So, opacity can, of course, be customized...)<br><br>
 
-Also note that data is being loaded from some other file in contrast to the examples in <A HREF="examples_inline.html">examples_inline.html</A>. Tentatively, these have to live on the same site. Although at some point, JSONP-like functionality might be considered.
-
 <h3>Code:</h3>
-<PRE style="background-color: #eee;">
-
-&lt;SCATTERPLOT SRC="./examples/hdbRental_Aug2014.json"&gt;&lt;/SCATTERPLOT&gt;
-
-</PRE>
+<PRE style="background-color: #eee;" id="code_ex1"></PRE>
 <HR/>
 
-<DIV ALIGN=CENTER>
+<DIV ALIGN=CENTER id="ex2">
 <SCATTERPLOT SRC="./examples/hdbResale_Aug2014.json"></SCATTERPLOT>	
 </DIV>
 
@@ -69,12 +65,20 @@ Also note that data is being loaded from some other file in contrast to the exam
 The data set here is relatively big, so apologies for the load time.
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;">
-
-&lt;SCATTERPLOT SRC="./examples/hdbResale_Aug2014.json"&gt;&lt;/SCATTERPLOT&gt;
-
-</PRE>
+<PRE style="background-color: #eee;" id="code_ex2"></PRE>
 <HR/>
+
+<script>
+// Before onload...
+var example_indices = [1,2]
+for (var i = 0; i < example_indices.length; i++) {
+	var ex_id = "ex" + example_indices[i]
+	var pre_id = "code_ex" + example_indices[i]
+	var codeElem = document.getElementById(ex_id)
+	var codeDisplayElem = document.getElementById(pre_id)
+	codeDisplayElem.appendChild(document.createTextNode("\n" + codeElem.innerHTML.trim() + "\n\n"))
+}
+</script>
 
 </BODY>
 </HTML>
