@@ -993,7 +993,7 @@ var jsonToD3 = {
 								.style("cursor", "pointer")
 								.style("left", unique_tag_element.offsetLeft + margins.left)
 								.style("top", unique_tag_element.offsetTop)
-								.text(chart_info.title)
+								.html(chart_info.title)
 								.on("click", showAllSeries)
 								.on("mouseover", titleMouseOver)
 								.on("mousemove", moveTooltipOnMouseMove)
@@ -1136,7 +1136,7 @@ var jsonToD3 = {
 								.style("font", chart_info.axes_label_font)
 								.style("text-align", "center")
 								.style("vertical-align", "top")
-								.text(chart_info.axes.x_label)
+								.html(chart_info.axes.x_label)
 			if (jsonToD3.DEVELOPMENT) {x_axis_label.style("background-color", "#00F").style("opacity", 0.8)} // ****** DEBUG *******
 
 			updateFunctions["positionXAxisLabel"] = function() {
@@ -1187,7 +1187,7 @@ var jsonToD3 = {
 								.style("transform-origin", "0% 0%")
 								.style("-webkit-transform-origin", "0% 0%")
 								.style("-ms-transform-origin", "0% 0%")
-								.text(chart_info.axes.y_label)
+								.html(chart_info.axes.y_label)
 			if (jsonToD3.DEVELOPMENT) {y_axis_label.style("background-color", "#00F").style("opacity", 0.8)} // ****** DEBUG *******
 
 			updateFunctions["positionYAxisLabel"] = function() {
@@ -1264,8 +1264,6 @@ var jsonToD3 = {
 				var legend_shift_x = chart_info.legend_offset_x
 				var legend_shift_y = chart_info.legend_offset_y
 
-				updateFunctions["legend"] = function() {}
-
 				sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.legend_font + ";")
 				sneakyDiv.innerHTML = "abcdefghijklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz".toUpperCase()
 
@@ -1305,6 +1303,10 @@ var jsonToD3 = {
 
 				// draw legend background first
 				var legend_bg = svg.append("rect")
+									.style("stroke", "#000")
+									.style("stroke-width", 3)
+									.style("fill", "#666")
+									.style("opacity", 0.15)
 
 				// draw legend
 				var legend = svg.selectAll(".legend")
@@ -1351,6 +1353,7 @@ var jsonToD3 = {
 									.style("text-align", "right")
 									.style("vertical-align", "middle")
 									.style("cursor", "pointer")
+									.style("font", chart_info.legend_font)
 									.attr("id", jsonToD3.get_legend_div_tag(unique_tag, d)) // assign ID
 									.on("click", CBs["click"])
 									.on("contextmenu", CBs["contextmenu"])
@@ -1362,12 +1365,10 @@ var jsonToD3 = {
 					legend_labels.push(legend_label)
 				}
 
-				updateFunctions["legend"] = function() {
-					legendWidth = -Infinity
+				var legendWidth = -Infinity
+				var legendDivHTML = {}
 
-					var divHTML = {}
-					var divWidth = {}
-
+				fewTimeUpdateFunctions["legendDivLabels"] = function() {
 					sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.legend_font + ";")
 
 					for (var i = 0; i < chart_info.data_series.length; i++) {
@@ -1377,38 +1378,40 @@ var jsonToD3 = {
 						sneakyDiv.innerHTML=d
 						jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
 
-						divHTML[d] = sneakyDiv.innerHTML
-						divWidth[d] = sneakyDiv.clientWidth + 2
+						legendDivHTML[d] = sneakyDiv.innerHTML
 
-						legend_label.style("width", divWidth[d])
-					}	
+						legend_label
+							.style("width", sneakyDiv.clientWidth + 2)
+							.html(legendDivHTML[d])
+					}
+				}
+				fewTimeUpdateFunctions["legendDivLabels"]()
+
+				updateFunctions["positionLegend"] = function() {
+					legendWidth = -Infinity
 
 					for (var i = 0; i < chart_info.data_series.length; i++) {
 						var d = chart_info.data_series[i].series_name
 						var legend_label = legend_labels[i]
 
-						legendWidth = legendWidth > divWidth[d] + 6 + legendSquareSide ? legendWidth : divWidth[d] + 6 + legendSquareSide
+						var thisLegendDivWidth = legend_label[0][0].clientWidth + 2
 
-						var leftPos = unique_tag_element.offsetLeft + legend_shift_x + margins.left + inner_width + margins.right - divWidth[d] - legendSquareSide - 6 - legendBorderShift
+						legendWidth = legendWidth > thisLegendDivWidth + 6 + legendSquareSide ? legendWidth : thisLegendDivWidth + 6 + legendSquareSide
+
+						var leftPos = unique_tag_element.offsetLeft + legend_shift_x + margins.left + inner_width + margins.right - thisLegendDivWidth - legendSquareSide - 6 - legendBorderShift
 						var topPos = unique_tag_element.offsetTop + legend_shift_y + margins.top + 2 + (i * legendSquareSidePlus) + legendBorderShift
 
 						legend_label
 							.style("left", leftPos)
 							.style("top", topPos)
-							.style("font", chart_info.legend_font)
-							.html(divHTML[d])
 					}
 
-					legend_bg.attr("x", function() {return inner_width + margins.right + legend_shift_x - legendWidth - 2*legendBorderShift + 1})
+					legend_bg.attr("x", inner_width + margins.right + legend_shift_x - legendWidth - 2*legendBorderShift + 1)
 							.attr("y", 0 + legend_shift_y + 1)
-							.attr("width", function() {return legendWidth + 2*legendBorderShift - 2})
-							.attr("height", function() {return (legendSquareSidePlus * chart_info.data_series.length - legendDeltaGap) + 2*legendBorderShift - 2})
-							.style("stroke", "#000")
-							.style("stroke-width", 3)
-							.style("fill", "#666")
-							.style("opacity", 0.15)
+							.attr("width", legendWidth + 2*legendBorderShift - 2)
+							.attr("height", (legendSquareSidePlus * chart_info.data_series.length - legendDeltaGap) + 2*legendBorderShift - 2)
 				}
-				updateFunctions["legend"]()
+				updateFunctions["positionLegend"]()
 				divLabels["legend_labels"] = legend_labels
 
 
@@ -1452,13 +1455,29 @@ var jsonToD3 = {
 		sneakyDiv.innerHTML = chart_info.title + " " + chart_info.x_label + chart_info.y_label
 		for (var i = 0; i < chart_info.data_series.length; i++) {
 			seriesNames.push(chart_info.data_series[i].series_name)
-			sneakyDiv.innerHTML += " " + chart_info.data_series[i].series_name
-
 			if (chart_info.data_series[i].initially_hidden) {
 				managementFunctions["showOrHideSeries"](chart_info.data_series[i].series_name, false)
 			}
 		}
-		jsonToD3.doMathJaxQueueIfPossible(sneakyDiv)
+
+		fewTimeUpdateFunctions["titleAndAxisLabels"] = function() {
+			sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.title_font + ";")
+
+			sneakyDiv.innerHTML = chart_info.title
+			jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
+			title.html(sneakyDiv.innerHTML)
+
+			sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.axes_label_font + ";")
+
+			sneakyDiv.innerHTML = chart_info.axes.y_label
+			y_axis_textHeight = sneakyDiv.clientHeight
+			jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
+			y_axis_label.html(sneakyDiv.innerHTML)
+
+			sneakyDiv.innerHTML = chart_info.axes.x_label
+			jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
+			x_axis_label.html(sneakyDiv.innerHTML)
+		}
 
 		var ret = {
 					"seriesNames": seriesNames,
@@ -1541,14 +1560,14 @@ var jsonToD3 = {
 					}
 				}
 			}
-			window.setTimeout(runUpdateFunctions, 333)
+			window.setTimeout(runUpdateFunctions, 50)
 		}
-		window.setTimeout(runUpdateFunctions, 500)
+		window.setTimeout(runUpdateFunctions, 50)
 
 		var number_of_times_left_to_run_hackish_update_functions = 5
 		var runFewTimeUpdateFunctions = null
 		runFewTimeUpdateFunctions = function() {
-			if (jsonToD3.canMathJaxTypeSet()) {
+			if (jsonToD3.canMathJaxTypeSet() && jsonToD3.canMathJaxQueue()) {
 				number_of_times_left_to_run_hackish_update_functions--
 				for (var i = 0; i < chartArray.length; i++) {
 					for (var k in chartArray[i]["fewTimeUpdateFunctions"]) {
