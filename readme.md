@@ -61,18 +61,18 @@ I currently don't dare to give a version number since it remains ugly and hackis
         + y_max (plot domain; floating point number; default given by data)
         + y_min (plot domain; floating point number; default given by data)
         + x_max (plot domain; floating point number; default given by data)
-        + x_axis_format (string; see: https://github.com/mbostock/d3/wiki/Formatting)
-        + y_axis_format (string; see: https://github.com/mbostock/d3/wiki/Formatting)
+        + x_axis_format (string; [More info](https://github.com/mbostock/d3/wiki/Formatting))
+        + y_axis_format (string; [More info](https://github.com/mbostock/d3/wiki/Formatting))
         + has_datetime_y_axis (boolean; default: false)
         + has_datetime_x_axis (boolean; default: false)
         + x_ticks (approximate number of ticks on axis; positive integer)
         + y_ticks (approximate number of ticks on axis; positive integer)
 
-    * title_font (string; default: "bold 14px Sans-Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
-    * axes_font (string; see: default: "12px Sans-Serif"; http://www.w3schools.com/cssref/pr_font_font.asp)
-    * axes_label_font (string; default: "bold 12px Sans-Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
-    * legend_font (string; default: "12px Sans-Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
-    * tooltip_font (string; default: "12px Sans Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
+    * title_font (string; default: "bold 14px Sans-Serif"; [More info](http://www.w3schools.com/cssref/pr_font_font.asp))
+    * axes_font (string; see: default: "12px Sans-Serif"; [More info](http://www.w3schools.com/cssref/pr_font_font.asp))
+    * axes_label_font (string; default: "bold 12px Sans-Serif"; [More info](http://www.w3schools.com/cssref/pr_font_font.asp))
+    * legend_font (string; default: "12px Sans-Serif"; [More info](http://www.w3schools.com/cssref/pr_font_font.asp))
+    * tooltip_font (string; default: "12px Sans Serif"; [More info](http://www.w3schools.com/cssref/pr_font_font.asp))
 
     * title (string)
     * title_underline (boolean; default: false)
@@ -83,6 +83,6 @@ I currently don't dare to give a version number since it remains ugly and hackis
 
     * tooltip_color (rgb; default: "#005" / "#000055")
     * tooltip_bgcolor (rgb; default: "#ddd" / "#dddddd")
-    * tooltip_border (rgb; default: "1px dotted"; see: http://www.w3schools.com/cssref/pr_border.asp)
+    * tooltip_border (rgb; default: "1px dotted"; [More info](http://www.w3schools.com/cssref/pr_border.asp))
 
 - Chart level settings include all of the data series settings. If something is set at the chart level and not at the data series level, the data series will inherit the chart level setting. Whatever is not set that the chart level is assumed to take the default. (I mean+ that's what default means+)
