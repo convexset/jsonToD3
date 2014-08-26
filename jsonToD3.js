@@ -12,91 +12,9 @@ This code is licensed under the terms of the MIT License.
 
 I currently don't dare to give a version number since it remains ugly and hackish. (Just look at how the settings are
 organized...) But I'll get to that at some point...
-
-
-Features:
-- Does reasonably nice scatter plots (from <SCATTERPLOT>) and bubble plots (from <BUBBLEPLOT>)
-- Processes chart info inline (in HTML tags) or loaded from somewhere specified by the SRC attribute
-- Allows hiding of data series if things are too cluttered (mouse over the legend to find out more)
-- Allows from LaTeX markup in the title, axis labels, legend labels and tool tips via
-  barely passable integration with MathJax
-- Setting "inheritance" from the chart to component data series (see below)
-- Seems to work reasonably well in Chrome, FireFox and Safari (for everything else, there's MasterCard...)
-
-
-Settings:
-- Data series settings include:
-	* use_series_in_chart (boolean; default: true; quite meaningless to set it at the chart level)
-	* initially_hidden (boolean; default: false)
-	* use_markers (boolean; default: true)
-	* marker_opacity (0 to 1; default: 1)
-	* marker_radius (default: 3.5)
-	* marker_border_color (rgb; default: "#000" / "#000000")
-	* draw_line (boolean; default: true)
-	* line_opacity (0 to 1; default: 1)
-	* line_width (default: 1.5)
-	* line_interpolation (defaul: "linear"; see possible options)
-		... linear - piecewise linear segments, as in a polyline.
-		... step-before - alternate between vertical and horizontal segments, as in a step function. 
-		... step-after - alternate between horizontal and vertical segments, as in a step function. 
-		... basis - a B-spline, with control point duplication on the ends. 
-		... basis-open - an open B-spline; may not intersect the start or end. 
-		... basis-closed - a closed B-spline, as in a loop. 
-		... bundle - equivalent to basis, except the tension parameter is used to straighten the spline. 
-		... cardinal - a Cardinal spline, with control point duplication on the ends. 
-		... cardinal-open - an open Cardinal spline; may not intersect the start or end, but will intersect other control points. 
-		... cardinal-closed - a closed Cardinal spline, as in a loop. 
-		... monotone - cubic interpolation that preserves monotonicity in y
-	* bubble_scale (default: 25)
-- Chart level settings
-	* dimensions
-		... width
-		... height
-	* margins
-		... left
-		... right
-		... top
-		... bottom
-	* axes
-has_datetime_x_axis
-		... x_label (string)
-		... y_label (string)
-		... x_min (plot domain; floating point number; default given by data)
-		... y_max (plot domain; floating point number; default given by data)
-		... y_min (plot domain; floating point number; default given by data)
-		... x_max (plot domain; floating point number; default given by data)
-		... x_axis_format (string; see: https://github.com/mbostock/d3/wiki/Formatting)
-		... y_axis_format (string; see: https://github.com/mbostock/d3/wiki/Formatting)
-		... has_datetime_y_axis (boolean; default: false)
-		... has_datetime_x_axis (boolean; default: false)
-		... x_ticks (approximate number of ticks on axis; positive integer)
-		... y_ticks (approximate number of ticks on axis; positive integer)
-
-	* title_font (string; default: "bold 14px Sans-Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
-	* axes_font (string; see: default: "12px Sans-Serif"; http://www.w3schools.com/cssref/pr_font_font.asp)
-	* axes_label_font (string; default: "bold 12px Sans-Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
-	* legend_font (string; default: "12px Sans-Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
-	* tooltip_font (string; default: "12px Sans Serif"; see: http://www.w3schools.com/cssref/pr_font_font.asp)
-
-	* title (string)
-	* title_underline (boolean; default: false)
-
-	* show_legend (boolean; default: true)
-	* legend_offset_x (for shifting the legend; integer; default: 0)
-	* legend_offset_y (for shifting the legend; integer; default: 0)
-
-	* tooltip_color (rgb; default: "#005" / "#000055")
-	* tooltip_bgcolor (rgb; default: "#ddd" / "#dddddd")
-	* tooltip_border (rgb; default: "1px dotted"; see: http://www.w3schools.com/cssref/pr_border.asp)
-
-- Chart level settings include all of the data series settings. If something is set at the chart level and not at the
-  data series level, the data series will inherit the chart level setting. Whatever is not set that the chart level is
-  assumed to take the default. (I mean... that's what default means...)
-
 */
 
 /*
-
 TO DO:
 - Resolve div pollution on failure to add chart (e.g.: title, x_label, y_label, tooltip, sneakyDiv, legend elems)
 */
@@ -123,7 +41,7 @@ var jsonToD3 = {
 		var external_data_source = plotTag.getAttribute("src")
 
 		var json = null
-		if (external_data_source == null) {			
+		if (external_data_source == null) {
 			json = plotTag.innerHTML
 		} else {
 			var getType = {}
@@ -143,7 +61,7 @@ var jsonToD3 = {
 		if (chart_info != null) {
 			chart_info.plot_type = plotTag.tagName.toUpperCase()
 		}
-		
+
 		return chart_info
 	},
 
@@ -234,8 +152,7 @@ var jsonToD3 = {
 	matchRGB: function(s) {
 		var rgbRegEx1 = /^#[0-9,A-F,a-f]{6}$/
 		var rgbRegEx2 = /^#[0-9,A-F,a-f]{3}$/
-		
-		return rgbRegEx1.test(s) || rgbRegEx2.test(s) 
+		return rgbRegEx1.test(s) || rgbRegEx2.test(s)
 	},
 
 	validatePointPlotSettings: function(info, plot_type, location, parent) {
@@ -372,7 +289,7 @@ var jsonToD3 = {
 
 
 		if (errors.length == 0) {
-			return true	
+			return true
 		} else {
 			throw errors
 		}
@@ -438,7 +355,7 @@ var jsonToD3 = {
 			if (isNaN(chart_info.axes.x_min)) {
 				errors.push("Error parsing axes.x_min")
 				chart_info.axes.x_min = null
-			} 			
+			}
 		} else {
 			chart_info.axes.x_min = null
 		}
@@ -452,7 +369,7 @@ var jsonToD3 = {
 			if (isNaN(chart_info.axes.x_max)) {
 				errors.push("Error parsing axes.x_max")
 				chart_info.axes.x_max = null
-			} 			
+			}
 		} else {
 			chart_info.axes.x_max = null
 		}
@@ -467,7 +384,7 @@ var jsonToD3 = {
 			if (isNaN(chart_info.axes.y_min)) {
 				errors.push("Error parsing axes.y_min")
 				chart_info.axes.y_min = null
-			} 			
+			}
 		} else {
 			chart_info.axes.y_min = null
 		}
@@ -481,7 +398,7 @@ var jsonToD3 = {
 			if (isNaN(chart_info.axes.y_max)) {
 				errors.push("Error parsing axes.y_max")
 				chart_info.axes.y_max = null
-			} 			
+			}
 		} else {
 			chart_info.axes.y_max = null
 		}
@@ -491,7 +408,7 @@ var jsonToD3 = {
 			if (isNaN(chart_info.axes.x_ticks)) {
 				errors.push("Error parsing axes.x_ticks")
 				chart_info.axes.x_ticks = null
-			} 			
+			}
 		} else {
 			chart_info.axes.x_ticks = null
 		}
@@ -504,7 +421,7 @@ var jsonToD3 = {
 			if (isNaN(chart_info.axes.y_ticks)) {
 				errors.push("Error parsing axes.y_ticks")
 				chart_info.axes.y_ticks = null
-			} 			
+			}
 		} else {
 			chart_info.axes.y_ticks = null
 		}
@@ -517,7 +434,7 @@ var jsonToD3 = {
 			if (isNaN(chart_info.legend_offset_x)) {
 				errors.push("Error parsing legend_offset_x")
 				chart_info.legend_offset_x = 0
-			} 			
+			}
 		} else {
 			chart_info.legend_offset_x = 0
 		}
@@ -527,7 +444,7 @@ var jsonToD3 = {
 			if (isNaN(chart_info.legend_offset_y)) {
 				errors.push("Error parsing legend_offset_y")
 				chart_info.legend_offset_y = 0
-			} 			
+			}
 		} else {
 			chart_info.legend_offset_y = 0
 		}
@@ -604,7 +521,7 @@ var jsonToD3 = {
 		}
 
 		if (errors.length == 0) {
-			return true	
+			return true
 		} else {
 			throw errors
 		}
@@ -649,12 +566,12 @@ var jsonToD3 = {
 				newPoint.x = new Date(Date.parse(point[0]))
 				if (isNaN(newPoint.x)) {
 					errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing date as x-coordinate).")
-				} 
+				}
 			} else {
 				newPoint.x = parseFloat(point[0])
 				if (isNaN(newPoint.x) || (!isFinite(newPoint.x))) {
 					errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing x-coordinate).")
-				} 
+				}
 			}
 			data_description.x_min = data_description.x_min < newPoint.x ? data_description.x_min : newPoint.x
 			data_description.x_max = data_description.x_max > newPoint.x ? data_description.x_max : newPoint.x
@@ -672,7 +589,7 @@ var jsonToD3 = {
 			}
 			data_description.y_min = data_description.y_min < newPoint.y ? data_description.y_min : newPoint.y
 			data_description.y_max = data_description.y_max > newPoint.y ? data_description.y_max : newPoint.y
-			
+
 			if (data_dimension == 3) {
 				newPoint.z = parseFloat(point[2])
 				if (isNaN(newPoint.z) || (!isFinite(newPoint.z))) {
@@ -691,7 +608,7 @@ var jsonToD3 = {
 			}
 			if (plot_type == "SCATTERPLOT") {
 				if (ds.use_markers) {
-					newPoint.marker_radius = ds.marker_radius	
+					newPoint.marker_radius = ds.marker_radius
 				} else if (isFinite(ds.line_width) && isFinite(ds.line_opacity)) {
 					newPoint.marker_opacity = ds.line_opacity
 					newPoint.marker_radius = ds.line_width / 2.0
@@ -707,7 +624,7 @@ var jsonToD3 = {
 			newPoint.series_name = ds.series_name
 
 			data[i] = newPoint
-			
+
 		}
 
 		if (errors.length == 0) {
@@ -802,7 +719,7 @@ var jsonToD3 = {
 		chart_info.chart_data_description = chart_data_description
 
 		if (errors.length == 0) {
-			return true	
+			return true
 		} else {
 			throw errors
 		}
@@ -815,7 +732,7 @@ var jsonToD3 = {
 			console.log(msg)
 			console.log("plotTag", plotTag)
 			console.log("chart_info", chart_info)
-			throw msg 
+			throw msg
 		}
 
 		plotTag.setAttribute('plottype', chart_info.plot_type)
@@ -848,7 +765,7 @@ var jsonToD3 = {
 			body.appendChild(sneakyDiv)
 
 
-			// Setup canvas 
+			// Setup canvas
 			var unique_tag_element = document.createElement("DIV")
 			unique_tag_element.setAttribute("id", unique_tag)
 			unique_tag_element.style.width = width
@@ -874,7 +791,7 @@ var jsonToD3 = {
 					.style("left", (d3.event.pageX + 15) + "px")
 					.style("top", (d3.event.pageY + 15) + "px")
 			}
-			
+
 			var fadeToolTip = function() {
 				tooltip.transition()
 					.duration(300)
@@ -888,11 +805,11 @@ var jsonToD3 = {
 				var newPathOpacity = !active ? 0 : jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_path_tag(unique_tag, d)]
 				var newLegendOpacity = !active ? 0.35 : 1
 				d3.selectAll("#"+jsonToD3.get_node_tag(unique_tag, d))
-					.transition().duration(300) 
+					.transition().duration(300)
 					.style("opacity", newNodeOpacity)
 					.style("visibility", newNodeOpacity == 0 ? "hidden" : "");
 				d3.selectAll("#"+jsonToD3.get_path_tag(unique_tag, d))
-					.transition().duration(300) 
+					.transition().duration(300)
 					.style("opacity", newPathOpacity);
 				d3.selectAll("#"+jsonToD3.get_legend_rect_tag(unique_tag, d))
 					.transition().duration(300)
@@ -1018,7 +935,7 @@ var jsonToD3 = {
 			var tooltip_padding = 0
 
 
-			// Setup x 
+			// Setup x
 			var xValue = function(d) { return d.x }
 			var xValueTT = function(d) {
 				if (chart_info.axes.has_datetime_x_axis && (chart_info.axes.x_axis_format != "")) {
@@ -1212,12 +1129,12 @@ var jsonToD3 = {
 		    for (var i = 0; i < chart_info.data_series.length; i++) {
 		    	color(chart_info.data_series[i].series_name)
 		    }
-			
+
 			// draw lines
 		    for (var i = 0; i < chart_info.data_series.length; i++) {
 		    	var ds = chart_info.data_series[i]
 
-				var line = d3.svg.line()	
+				var line = d3.svg.line()
 				    .x(function(d) { return xMap(d) })
 				    .y(function(d) { return yMap(d) })
 					.interpolate(ds.line_interpolation)
@@ -1244,12 +1161,12 @@ var jsonToD3 = {
 					.attr("id", function(d) {return jsonToD3.get_node_tag(unique_tag, d.series_name)}) // assign ID
 					.style("opacity", function(d) {return d.marker_opacity})
 					.style("stroke", function(d) {return d.marker_border_color})
-					.style("fill", function(d) {return color(cValue(d))}) 
+					.style("fill", function(d) {return color(cValue(d))})
 					.style("cursor", "crosshair")
 					.on("mouseover", markerMouseOver)
 					.on("mousemove", moveTooltipOnMouseMove)
 					.on("mouseout", fadeToolTip)
-			
+
 			for (var i = 0; i < chart_info.data_series.length; i++) {
 				var ds = chart_info.data_series[i]
 				var key = getSeriesKey(ds.series_name)
@@ -1271,7 +1188,7 @@ var jsonToD3 = {
 				var legendDeltaGap = 3
 				var legendSquareSide = textHeight + 4
 				var legendSquareSidePlus = legendSquareSide + legendDeltaGap
-				
+
 				var legendWidth = -Infinity
 				var legendBorderShift = 1 + Math.floor(legendSquareSide / 3.0)
 
