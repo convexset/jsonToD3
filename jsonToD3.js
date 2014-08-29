@@ -858,7 +858,7 @@ var jsonToD3 = {
 					tooltip_text = "<div><b>" + d.id + "</b><br/>(" + xValueTT(d) + ", " + yValueTT(d) + ")" + "<br/><em>" + cValue(d) + "</em></div>"
 				}
 
-				sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + ";")
+				sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + "px;")
 				sneakyDiv.innerHTML = tooltip_text
 					jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
 
@@ -882,7 +882,7 @@ var jsonToD3 = {
 				var titleMouseOver = function() {
 					var tooltip_text = "Click the title to show all series."
 
-					sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + ";")
+					sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + "px;")
 					sneakyDiv.innerHTML = tooltip_text
 
 					tooltip
@@ -899,7 +899,7 @@ var jsonToD3 = {
 				}
 
 				title = d3.select(unique_tag_element).append("div")
-								.attr("class", "title")
+								.attr("class", "jsonToD3_title")
 								.attr("id", jsonToD3.get_title_tag(unique_tag))
 								.style("position", "absolute")
 								.style("width", inner_width + "px")
@@ -1047,7 +1047,7 @@ var jsonToD3 = {
 			var vert_padding_x_axis = jsonToD3.reduce(Math.max, jsonToD3.map(getXAxisHeight, x_axis[0][0].childNodes), -Infinity)
 
 			var x_axis_label = d3.select(unique_tag_element).append("div")
-								.attr("class", "label")
+								.attr("class", "jsonToD3_label")
 								.style("position", "absolute")
 								.style("width", inner_width + "px")
 								.style("height", "auto")
@@ -1090,7 +1090,7 @@ var jsonToD3 = {
 			textWidth = sneakyDiv.clientWidth
 
 			var y_axis_label = d3.select(unique_tag_element).append("div")
-				                .attr("class","label")
+								.attr("class", "jsonToD3_label")
 								.style("position", "absolute")
 								.style("text-align", "center")
 								.style("vertical-align", "top")
@@ -1203,7 +1203,7 @@ var jsonToD3 = {
 						tooltip_text += "<br/>(Click the title to show all series.)"
 					}
 
-					sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + ";")
+					sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + "px;")
 					sneakyDiv.innerHTML = tooltip_text
 					jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
 
@@ -1266,7 +1266,7 @@ var jsonToD3 = {
 
 					var legend_label = d3.select(unique_tag_element)
 									.append("div")
-									.attr("class", "legend")
+									.attr("class", "jsonToD3_legend")
 									.style("position", "absolute")
 									.style("text-align", "right")
 									.style("vertical-align", "middle")
@@ -1342,10 +1342,10 @@ var jsonToD3 = {
 				tooltip_padding = Math.max(2,Math.ceil(textHeight/3.0))
 
 				tooltip = d3.select(unique_tag_element).append("div")
-									.attr("class", "tooltip")
+									.attr("class", "jsonToD3_tooltip")
 									.style("opacity", 0)
 									.style("position", "absolute")
-									.style("padding", tooltip_padding)
+									.style("padding", tooltip_padding + "px")
 									.style("width", Math.max(100, Math.ceil(textWidth/2.5)) + "px")
 									.style("height", Math.max(30, 4 + 4*textHeight) + "px")
 									.style("pointer-events", "none")
