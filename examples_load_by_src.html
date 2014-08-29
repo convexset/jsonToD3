@@ -1,7 +1,8 @@
-<HTML>
-<META CHARSET="utf-8">
-
+<!DOCTYPE html>
+<HTML lang="en">
 <HEAD>
+<META CHARSET="utf-8">
+<TITLE>Various Examples for jsonToD3.js (Load-by-SRC)</TITLE>
 
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
 <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
@@ -20,32 +21,30 @@
     "delayStartupUntil" : "onload"
   });
 </script>
-<script type="text/javascript"
-  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js">
-</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 
-<script type="text/javascript" src="jsonToD3.js"></script>	
+<script type="text/javascript" src="jsonToD3.js"></script>
 
 <script type="text/javascript">
 var chartArray = null
 function init() {
 	chartArray = jsonToD3.work();
 }
-</script>	
+</script>
 
 </HEAD>
 <BODY onLoad="init()">
 
-<H1 ALIGN=CENTER>Various Load-by-SRC Examples for jsonToD3.js</H1>
+<H1 ALIGN=CENTER>Various Examples for jsonToD3.js (Load-by-SRC)</H1>
 
 <p>In the examples here, data is being loaded from some other file in contrast to the examples in <A HREF="examples_inline.html">examples_inline.html</A>. Tentatively, these have to live on the same site. Although at some point, JSONP-like functionality might be considered.</p>
 
-<p>For those who are interested in using these charts, check out <a href="https://github.com/convexset/jsonToD3" target=_blank>the GitHub repository for jsonToD3.js</a>.</p>
+<p>For those who are interested in jsonToD3.js as a charting library, check out <a href="https://github.com/convexset/jsonToD3" target=_blank>the GitHub repository for jsonToD3.js</a>.</p>
 
 <HR/>
 
 <DIV ALIGN=CENTER id="ex1">
-<SCATTERPLOT SRC="./examples/hdbRental_Aug2014.json"></SCATTERPLOT>	
+<SCATTERPLOT SRC="./examples/hdbRental_Aug2014.json"></SCATTERPLOT>
 </DIV>
 
 <h3>The Chart</h3>
@@ -60,7 +59,7 @@ function init() {
 <HR/>
 
 <DIV ALIGN=CENTER id="ex2">
-<SCATTERPLOT SRC="./examples/hdbResale_Aug2014.json"></SCATTERPLOT>	
+<SCATTERPLOT SRC="./examples/hdbResale_Aug2014.json"></SCATTERPLOT>
 </DIV>
 
 <h3>The Chart</h3>

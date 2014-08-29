@@ -1,7 +1,8 @@
-<HTML>
-<META CHARSET="utf-8">
-
+<!DOCTYPE html>
+<HTML lang="en">
 <HEAD>
+<META CHARSET="utf-8">
+<TITLE>Various Examples for jsonToD3.js (Inline JSON)</TITLE>
 
 <style>
 span.code {
@@ -29,27 +30,25 @@ span.code {
     "delayStartupUntil" : "onload"
   });
 </script>
-<script type="text/javascript"
-  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js">
-</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 
-<script type="text/javascript" src="jsonToD3.js"></script>	
+<script type="text/javascript" src="jsonToD3.js"></script>
 
 <script type="text/javascript">
 var chartArray = null
 function init() {
 	chartArray = jsonToD3.work()
 }
-</script>	
+</script>
 
 </HEAD>
 <BODY onLoad="init()">
 
-<H1 ALIGN=CENTER>Various Inline Examples for jsonToD3.js</H1>
+<H1 ALIGN=CENTER>Various Examples for jsonToD3.js (Inline JSON)</H1>
 
 <p>In the examples here, data is described in-line in contrast to the examples in <A HREF="examples_load_by_src.html">examples_load_by_src.html</A> where they are loaded from an external file specified by the <span class=code>SRC</span> attribute. Check those examples out. They will be of interest to most, especially Singaporeans.</p>
 
-<p>For those who are interested in using these charts, check out <a href="https://github.com/convexset/jsonToD3" target=_blank>the GitHub repository for jsonToD3.js</a>.</p>
+<p>For those who are interested in jsonToD3.js as a charting library, check out <a href="https://github.com/convexset/jsonToD3" target=_blank>the GitHub repository for jsonToD3.js</a>.</p>
 
 <HR/>
 
@@ -85,9 +84,9 @@ function init() {
 			"marker_opacity": 0.6,
 			"marker_radius": 10,
 			"data": [
-				[2000, 50000, "$\\alpha^{\\omega}$"], 
-				[2001, 49000, "$\\displaystyle\\lim\\limits_{x\\rightarrow 0} \\frac{\\sin x}{x} = 1$"], 
-				[2002, 47500, "$w^{T}(I-P)^{-1}q^{(j)}$"], 
+				[2000, 50000, "$\\alpha^{\\omega}$"],
+				[2001, 49000, "$\\displaystyle\\lim\\limits_{x\\rightarrow 0} \\frac{\\sin x}{x} = 1$"],
+				[2002, 47500, "$w^{T}(I-P)^{-1}q^{(j)}$"],
 				[2004, 39750, "Yummy $\\pi$"]
 			]
 		},
@@ -95,16 +94,16 @@ function init() {
 			"series_name": "Series $\\beta$",
 			"draw_line": false,
 			"data": [
-				[2000, 30000], 
-				[2001, 20000], 
-				[2002.5, 23500, "Woo Hoo!!"], 
-				[2002.75, 24500], 
+				[2000, 30000],
+				[2001, 20000],
+				[2002.5, 23500, "Woo Hoo!!"],
+				[2002.75, 24500],
 				[2003.5, 30750]
 			]
 		}
 	]
 }
-</SCATTERPLOT>	
+</SCATTERPLOT>
 </DIV>
 
 <h3>The Chart</h3>
@@ -147,9 +146,9 @@ function init() {
 			"line_opacity": 0.3,
 			"marker_border_color": "#F00",
 			"data": [
-				["15 Jan 2014", 50023], 
-				["15 Mar 2014", 49080], 
-				["15 Jul 2014", 47500], 
+				["15 Jan 2014", 50023],
+				["15 Mar 2014", 49080],
+				["15 Jul 2014", 47500],
 				["15 Oct 2014", 39750]
 			]
 		},
@@ -158,9 +157,9 @@ function init() {
 			"use_markers": false,
 			"line_interpolation": "basis",
 			"data": [
-				["15 Jan 2014", 30202], 
-				["15 Mar 2014", 35099], 
-				["15 Jul 2014", 27500], 
+				["15 Jan 2014", 30202],
+				["15 Mar 2014", 35099],
+				["15 Jul 2014", 27500],
 				["15 Oct 2014", 29750]
 			]
 		},
@@ -170,15 +169,15 @@ function init() {
 			"marker_opacity": 1,
 			"line_interpolation": "step-before",
 			"data": [
-				["15 Jan 2014", 30102], 
-				["15 Mar 2014", 34599], 
-				["15 Jun 2014", 27300], 
+				["15 Jan 2014", 30102],
+				["15 Mar 2014", 34599],
+				["15 Jun 2014", 27300],
 				["15 Sep 2014", 31750]
 			]
 		}
 	]
 }
-</SCATTERPLOT>	
+</SCATTERPLOT>
 </DIV>
 
 <h3>The Chart</h3>
@@ -461,7 +460,7 @@ function init() {
 		}
 	]
 }
-</SCATTERPLOT>	
+</SCATTERPLOT>
 </DIV>
 
 <h3>The Chart</h3>

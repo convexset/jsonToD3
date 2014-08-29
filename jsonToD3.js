@@ -16,7 +16,8 @@ organized...) But I'll get to that at some point...
 
 /*
 TO DO:
-- Resolve div pollution on failure to add chart (e.g.: title, x_label, y_label, tooltip, sneakyDiv, legend elems)
+- Create a ERR-IMG-SRC attribute
+- Create a ERR-TEXT attribute
 */
 
 var jsonToD3 = {
@@ -66,7 +67,7 @@ var jsonToD3 = {
 	},
 
 	slugify: function(s) {
-		return s.toString().toLowerCase().replace(/[^a-z,0-9]/g, '')
+		return s.toString().toLowerCase().replace(/[^a-z0-9]/g, '')
 	},
 
 	get_series_key: function(unique_tag, s) {
@@ -150,8 +151,8 @@ var jsonToD3 = {
 	},
 
 	matchRGB: function(s) {
-		var rgbRegEx1 = /^#[0-9,A-F,a-f]{6}$/
-		var rgbRegEx2 = /^#[0-9,A-F,a-f]{3}$/
+		var rgbRegEx1 = /^#[0-9A-Fa-f]{6}$/
+		var rgbRegEx2 = /^#[0-9A-Fa-f]{3}$/
 		return rgbRegEx1.test(s) || rgbRegEx2.test(s)
 	},
 
@@ -768,13 +769,13 @@ var jsonToD3 = {
 			// Setup canvas
 			var unique_tag_element = document.createElement("DIV")
 			unique_tag_element.setAttribute("id", unique_tag)
-			unique_tag_element.style.width = width
-			unique_tag_element.style.height = height
+			unique_tag_element.style.width = width + "px"
+			unique_tag_element.style.height = height + "px"
 			var svgParent = plotTag.appendChild(unique_tag_element)
 			var svg = d3.select(unique_tag_element).append("svg")
 							.style("position", "relative")
-							.style("width", width)
-							.style("height", height)
+							.style("width", width + "px")
+							.style("height", height + "px")
 							.append("g")
 							.attr("transform", "translate(" + margins.left + "," + margins.top + ")")
 
@@ -862,8 +863,8 @@ var jsonToD3 = {
 					jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
 
 				tooltip
-					.style("width", sneakyDiv.clientWidth + 2)
-					.style("height", sneakyDiv.clientHeight + 2)
+					.style("width", (sneakyDiv.clientWidth + 2) + "px")
+					.style("height", (sneakyDiv.clientHeight + 2) + "px")
 
 				tooltip.html(sneakyDiv.innerHTML)
 
@@ -885,8 +886,8 @@ var jsonToD3 = {
 					sneakyDiv.innerHTML = tooltip_text
 
 					tooltip
-						.style("width", sneakyDiv.clientWidth + 2)
-						.style("height", sneakyDiv.clientHeight + 2)
+						.style("width", (sneakyDiv.clientWidth + 2) + "px")
+						.style("height", (sneakyDiv.clientHeight + 2) + "px")
 
 					tooltip.html(sneakyDiv.innerHTML)
 
@@ -901,15 +902,15 @@ var jsonToD3 = {
 								.attr("class", "title")
 								.attr("id", jsonToD3.get_title_tag(unique_tag))
 								.style("position", "absolute")
-								.style("width", inner_width)
+								.style("width", inner_width + "px")
 								.style("height", "auto")
 								.style("font", chart_info.title_font)
 								.style("text-align", "center")
 								.style("vertical-align", "top")
 								.style("text-decoration", chart_info.title_underline ? "underline" : "none")
 								.style("cursor", "pointer")
-								.style("left", unique_tag_element.offsetLeft + margins.left)
-								.style("top", unique_tag_element.offsetTop)
+								.style("left", (unique_tag_element.offsetLeft + margins.left) + "px")
+								.style("top", (unique_tag_element.offsetTop) + "px")
 								.html(chart_info.title)
 								.on("click", showAllSeries)
 								.on("mouseover", titleMouseOver)
@@ -920,8 +921,8 @@ var jsonToD3 = {
 				updateFunctions["positionTitle"] = function() {
 					var titleTag = document.getElementById(jsonToD3.get_title_tag(unique_tag))
 					title
-						.style("left", unique_tag_element.offsetLeft + margins.left)
-						.style("top", unique_tag_element.offsetTop + margins.top - titleTag.clientHeight - 4)
+						.style("left", (unique_tag_element.offsetLeft + margins.left) + "px")
+						.style("top", (unique_tag_element.offsetTop + margins.top - titleTag.clientHeight - 4) + "px")
 				}
 				updateFunctions["positionTitle"]()
 				divLabels["title"] = title
@@ -1048,7 +1049,7 @@ var jsonToD3 = {
 			var x_axis_label = d3.select(unique_tag_element).append("div")
 								.attr("class", "label")
 								.style("position", "absolute")
-								.style("width", inner_width)
+								.style("width", inner_width + "px")
 								.style("height", "auto")
 								.style("font", chart_info.axes_label_font)
 								.style("text-align", "center")
@@ -1058,8 +1059,8 @@ var jsonToD3 = {
 
 			updateFunctions["positionXAxisLabel"] = function() {
 				x_axis_label
-					.style("left", unique_tag_element.offsetLeft + margins.left)
-					.style("top", unique_tag_element.offsetTop + margins.top + inner_height + vert_padding_x_axis)
+					.style("left", (unique_tag_element.offsetLeft + margins.left) + "px")
+					.style("top", (unique_tag_element.offsetTop + margins.top + inner_height + vert_padding_x_axis) + "px")
 			}
 			updateFunctions["positionXAxisLabel"]()
 			divLabels["x_axis_label"] = x_axis_label
@@ -1093,7 +1094,7 @@ var jsonToD3 = {
 								.style("position", "absolute")
 								.style("text-align", "center")
 								.style("vertical-align", "top")
-								.style("width", inner_height)
+								.style("width", inner_height + "px")
 								.style("height", "auto")
 								.style("font", chart_info.axes_label_font)
 								.style("transform", "rotate(-90deg)")
@@ -1109,8 +1110,8 @@ var jsonToD3 = {
 
 			updateFunctions["positionYAxisLabel"] = function() {
 				y_axis_label
-					.style("left", unique_tag_element.offsetLeft + margins.left - horiz_padding_y_axis - y_axis_textHeight - 4)
-					.style("top", unique_tag_element.offsetTop + margins.top + inner_height)
+					.style("left", (unique_tag_element.offsetLeft + margins.left - horiz_padding_y_axis - y_axis_textHeight - 4) + "px")
+					.style("top", (unique_tag_element.offsetTop + margins.top + inner_height) + "px")
 			}
 			updateFunctions["positionYAxisLabel"]()
 			divLabels["y_axis_label"] = y_axis_label
@@ -1207,8 +1208,8 @@ var jsonToD3 = {
 					jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
 
 					tooltip.html(sneakyDiv.innerHTML)
-						.style("width", sneakyDiv.clientWidth + 2)
-						.style("height", sneakyDiv.clientHeight + 2)
+						.style("width", (sneakyDiv.clientWidth + 2) + "px")
+						.style("height", (sneakyDiv.clientHeight + 2) + "px")
 
 					moveTooltipOnMouseMove()
 
@@ -1298,7 +1299,7 @@ var jsonToD3 = {
 						legendDivHTML[d] = sneakyDiv.innerHTML
 
 						legend_label
-							.style("width", sneakyDiv.clientWidth + 2)
+							.style("width", (sneakyDiv.clientWidth + 2) + "px")
 							.html(legendDivHTML[d])
 					}
 				}
@@ -1319,14 +1320,14 @@ var jsonToD3 = {
 						var topPos = unique_tag_element.offsetTop + legend_shift_y + margins.top + 2 + (i * legendSquareSidePlus) + legendBorderShift
 
 						legend_label
-							.style("left", leftPos)
-							.style("top", topPos)
+							.style("left", leftPos + "px")
+							.style("top", topPos + "px")
 					}
 
-					legend_bg.attr("x", inner_width + margins.right + legend_shift_x - legendWidth - 2*legendBorderShift + 1)
-							.attr("y", 0 + legend_shift_y + 1)
-							.attr("width", legendWidth + 2*legendBorderShift - 2)
-							.attr("height", (legendSquareSidePlus * chart_info.data_series.length - legendDeltaGap) + 2*legendBorderShift - 2)
+					legend_bg.attr("x", (inner_width + margins.right + legend_shift_x - legendWidth - 2*legendBorderShift + 1))
+							.attr("y", (0 + legend_shift_y + 1))
+							.attr("width", (legendWidth + 2*legendBorderShift - 2))
+							.attr("height", ((legendSquareSidePlus * chart_info.data_series.length - legendDeltaGap) + 2*legendBorderShift - 2))
 				}
 				updateFunctions["positionLegend"]()
 				divLabels["legend_labels"] = legend_labels
@@ -1345,8 +1346,8 @@ var jsonToD3 = {
 									.style("opacity", 0)
 									.style("position", "absolute")
 									.style("padding", tooltip_padding)
-									.style("width", Math.max(100, Math.ceil(textWidth/2.5)))
-									.style("height", Math.max(30, 4 + 4*textHeight))
+									.style("width", Math.max(100, Math.ceil(textWidth/2.5)) + "px")
+									.style("height", Math.max(30, 4 + 4*textHeight) + "px")
 									.style("pointer-events", "none")
 									.style("text-align", "left")
 									.style("vertical-align", "middle")
