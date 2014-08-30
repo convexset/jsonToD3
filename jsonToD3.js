@@ -1,7 +1,7 @@
 /*
 JSON to D3 is a simple JavaScript utility for converting JSON-formatted text or JSON into D3 charts.
 
-Version 0.1.0
+Version 0.1.1
 
 Original Motivation: To create a "text" to "charts" JavaScript utility so chart settings and data
 might be embedded in directly in version-control friendly static documents like HTML... or JSON
@@ -852,7 +852,7 @@ var jsonToD3 = {
 
 				sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + "px;")
 				sneakyDiv.innerHTML = tooltip_text
-					jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
+				jsonToD3.doMathJaxTypeSetIfPossible(sneakyDiv)
 
 				tooltip
 					.style("width", (sneakyDiv.clientWidth + 2) + "px")
@@ -1426,7 +1426,7 @@ var jsonToD3 = {
 		return jsonToD3.makeChartCanvas(plotTag, chart_info)
 	},
 
-	work: function() {
+	_work: function(usingMathJax) {
 		var chartArray = []
 		if (jsonToD3.plotIdx == null) {
 			jsonToD3.plotIdx = 0
@@ -1497,10 +1497,10 @@ var jsonToD3 = {
 
 		var runUpdateFunctions = null
 		runUpdateFunctions = function() {
-			if (jsonToD3.canMathJaxTypeSet()) {
+			if ((!usingMathJax) || jsonToD3.canMathJaxTypeSet()) {
 				for (var i = 0; i < chartArray.length; i++) {
 					for (var k in chartArray[i]["updateFunctions"]) {
-						chartArray[i]["updateFunctions"][k]()
+						chartArray[i]["updateFunctions"][k]()						
 					}
 				}
 			}
@@ -1511,7 +1511,7 @@ var jsonToD3 = {
 		var number_of_times_left_to_run_hackish_update_functions = 5
 		var runFewTimeUpdateFunctions = null
 		runFewTimeUpdateFunctions = function() {
-			if (jsonToD3.canMathJaxTypeSet() && jsonToD3.canMathJaxQueue()) {
+			if ((!usingMathJax) || (jsonToD3.canMathJaxTypeSet() && jsonToD3.canMathJaxQueue())) {
 				number_of_times_left_to_run_hackish_update_functions--
 				for (var i = 0; i < chartArray.length; i++) {
 					for (var k in chartArray[i]["fewTimeUpdateFunctions"]) {
@@ -1526,5 +1526,9 @@ var jsonToD3 = {
 		window.setTimeout(runFewTimeUpdateFunctions, 1000)
 
 		return chartArray;
-	}
+	},
+
+	work: function() { return jsonToD3._work(true) },
+
+	work_NoMathJax: function() { return jsonToD3._work(false) },
 }

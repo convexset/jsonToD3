@@ -1,4 +1,4 @@
-JSON to D3 (v0.1.0)
+JSON to D3 (v0.1.1)
 ---
 
 JSON to D3 is a simple JavaScript utility for converting JSON-formatted text or JSON into D3 charts.
@@ -16,7 +16,7 @@ This code is licensed under the terms of the MIT License.
 - Allows hiding of data series if things are too cluttered (mouse over the legend to find out more)
 - Allows from LaTeX markup in the title, axis labels, legend labels and tool tips via barely passable integration with MathJax
 - Setting "inheritance" from the chart to component data series (see below)
-- Seems to work reasonably well in Chrome, FireFox and Safari (for everything else, there's MasterCard+)
+- Seems to work reasonably well in Chrome, FireFox and Safari (for everything else, there's MasterCard)
 - When chart load fails, replace with a captioned (ERR-TEXT) and styled (ERR-IMG-STYLE) image (ERR-IMG-SRC) in a styled (ERR-STYLE) DIV.
 
 
@@ -24,6 +24,14 @@ This code is licensed under the terms of the MIT License.
 - Bar charts
 - Pie charts
 - Graph (as in "network") plots
+
+
+### Getting Started
+1. Load D3 (designed and tested with 3.4.11)
+2. Load jQuery if loading chart data using the SRC attribute (designed and tested with 2.1.1)
+3. Load MathJax if using equations in titles, axis labels, legend labels, or point labels.
+4. Load jsonToD3.js.
+5. Call jsonToD3.work() or jsonToD3.work_NoMathJax() from a body.onload handler (the latter is for non-use of MathJax).
 
 
 ### Settings:
