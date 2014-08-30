@@ -1,4 +1,4 @@
-JSON to D3
+JSON to D3 (v0.1.0)
 ---
 
 JSON to D3 is a simple JavaScript utility for converting JSON-formatted text or JSON into D3 charts.
@@ -9,8 +9,6 @@ Copyright (c) 2014 Jeremy Chen
 
 This code is licensed under the terms of the MIT License.
 
-I currently don't dare to give a version number since it remains ugly and hackish. (Just look at how the settings are organized...) But I'll get to that at some point...
-
 
 ### Features
 - Does reasonably nice scatter plots (from <SCATTERPLOT>) and bubble plots (from <BUBBLEPLOT>)
@@ -19,6 +17,13 @@ I currently don't dare to give a version number since it remains ugly and hackis
 - Allows from LaTeX markup in the title, axis labels, legend labels and tool tips via barely passable integration with MathJax
 - Setting "inheritance" from the chart to component data series (see below)
 - Seems to work reasonably well in Chrome, FireFox and Safari (for everything else, there's MasterCard+)
+- When chart load fails, replace with a captioned (ERR-TEXT) and styled (ERR-IMG-STYLE) image (ERR-IMG-SRC) in a styled (ERR-STYLE) DIV.
+
+
+### On the Horizon
+- Bar charts
+- Pie charts
+- Graph (as in "network") plots
 
 
 ### Settings:
