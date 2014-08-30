@@ -33,6 +33,24 @@ This code is licensed under the terms of the MIT License.
 4. Load jsonToD3.js.
 5. Call jsonToD3.work() or jsonToD3.work_NoMathJax() from a body.onload handler (the latter is for non-use of MathJax).
 
+An example MathJax configuration that works:
+```html
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "messageStyle" : "none",
+    "HTML-CSS": { availableFonts: ["TeX"] },
+    "delayStartupUntil" : "onload"
+  });
+</script>
+```
+
 
 ### Settings:
 - Data series settings include:
