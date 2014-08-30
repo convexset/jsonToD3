@@ -4,6 +4,23 @@
 <META CHARSET="utf-8">
 <TITLE>Various Examples for jsonToD3.js (Load-by-SRC)</TITLE>
 
+<style>
+code {
+  font-family: Courier New;
+  font-size: 90%;
+  color: #00F;
+}
+
+pre {
+  background-color: #eee;
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  \word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+</style>
+
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
 <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
 
@@ -55,7 +72,7 @@ function init() {
 <p>Note also that the translucent points lead to something of a empirical density plot. (So, opacity can, of course, be customized...)</p>
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;" id="code_ex1"></PRE>
+<PRE id="code_ex1"></PRE>
 <HR/>
 
 <DIV ALIGN=CENTER id="ex2">
@@ -66,12 +83,28 @@ function init() {
 <p>The data set here is relatively big, so apologies for the load time. I expect Singaporeans would have a good time viewing the data though it is only a subset and is sliced "one way".</p>
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;" id="code_ex2"></PRE>
+<PRE id="code_ex2"></PRE>
+<HR/>
+
+<DIV ALIGN=CENTER id="ex3">
+<SCATTERPLOT SRC="./examples/badlyFormed.json"
+  ERR-TEXT="The Chart Didn't Load, So Here's Something For You"
+  ERR-STYLE="text-align: center; color: #446; font-weight: bold;"
+  ERR-IMG-SRC="https://pbs.twimg.com/media/BwH17FsCAAAqOJ9.jpg:small"
+  ERR-IMG-STYLE="border: 2px solid #777; -webkit-border-radius: 20px; -moz-border-radius: 20px; border-radius: 20px;">
+</SCATTERPLOT>
+</DIV>
+
+<h3>The Non-Chart</h3>
+<p>The source contains some unparseable elements. So this is how errors might be managed</p>
+
+<h3>Code:</h3>
+<PRE id="code_ex3"></PRE>
 <HR/>
 
 <script>
 // Before onload...
-var example_indices = [1,2]
+var example_indices = [1,2,3]
 for (var i = 0; i < example_indices.length; i++) {
 	var ex_id = "ex" + example_indices[i]
 	var pre_id = "code_ex" + example_indices[i]

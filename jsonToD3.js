@@ -1456,16 +1456,50 @@ var jsonToD3 = {
 			var plotTag = plots[i]
 			if (plotTag.getAttribute('processed') == null) {
 
-				var chartCanvas = jsonToD3.processTag(plotTag)
-				plotTag.setAttribute('processed', "")
-				if (chartCanvas == null) {
-					plotTag.setAttribute('rendered', false)
-					continue
-				} else {
+				var chartCanvas = null
+				try {
+					chartCanvas = jsonToD3.processTag(plotTag)
+					plotTag.setAttribute('rendered', true)
 					chartArray.push(chartCanvas)
+				} catch (error) {
+					chartCanvas = null
+					plotTag.setAttribute('rendered', false)
+
+					err_img_src = plotTag.getAttribute("ERR-IMG-SRC").trim()
+					err_img_style = plotTag.getAttribute("ERR-IMG-STYLE").trim()
+					err_text = plotTag.getAttribute("ERR-TEXT").trim()
+					err_style = plotTag.getAttribute("ERR-STYLE").trim()
+
+					console.log("JSON To D3: Error parsing tag.", plotTag, error)
+					console.log("JSON To D3: Displaying ERR-IMG-SRC of " + err_img_src)
+					console.log("JSON To D3: Displaying ERR-IMG-STYLE of " + err_img_style)
+					console.log("JSON To D3: Displaying ERR-TEXT of " + err_text)
+					console.log("JSON To D3: Using ERR-STYLE of " + err_style)
+
+					if ((err_img_src != "") || (err_text != "")) {
+						plotTag.innerHTML = ""
+						err_div = document.createElement("div")
+						err_div.setAttribute("style", err_style)
+						if (err_img_src != "") {
+							some_div = document.createElement("div")
+							some_img = document.createElement("img")
+							some_img.setAttribute("src", err_img_src)
+							some_img.setAttribute("style", err_img_style)
+							some_div.appendChild(some_img)
+							err_div.appendChild(some_div)
+						}
+						if (err_text != "") {
+							some_div = document.createElement("div")
+							some_div.innerHTML = err_text
+							err_div.appendChild(some_div)
+						}
+						plotTag.appendChild(err_div)
+					}
+				} finally {
+					plotTag.setAttribute('processed', "")
 				}
 
-				plotTag.setAttribute('rendered', true)
+
 			}
 		}
 

@@ -5,10 +5,19 @@
 <TITLE>Various Examples for jsonToD3.js (Inline JSON)</TITLE>
 
 <style>
-span.code {
+code {
 	font-family: Courier New;
 	font-size: 90%;
 	color: #00F;
+}
+
+pre {
+	background-color: #eee;
+	white-space: pre-wrap;       /* css-3 */
+	white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	white-space: -pre-wrap;      /* Opera 4-6 */
+	white-space: -o-pre-wrap;    /* Opera 7 */
+	\word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 </style>
 
@@ -46,7 +55,7 @@ function init() {
 
 <H1 ALIGN=CENTER>Various Examples for jsonToD3.js (Inline JSON)</H1>
 
-<p>In the examples here, data is described in-line in contrast to the examples in <A HREF="examples_load_by_src.html">examples_load_by_src.html</A> where they are loaded from an external file specified by the <span class=code>SRC</span> attribute. Check those examples out. They will be of interest to most, especially Singaporeans.</p>
+<p>In the examples here, data is described in-line in contrast to the examples in <A HREF="examples_load_by_src.html">examples_load_by_src.html</A> where they are loaded from an external file specified by the <code>SRC</code> attribute. Check those examples out. They will be of interest to most, especially Singaporeans.</p>
 
 <p>For those who are interested in jsonToD3.js as a charting library, check out <a href="https://github.com/convexset/jsonToD3" target=_blank>the GitHub repository for jsonToD3.js</a>.</p>
 
@@ -112,7 +121,7 @@ function init() {
 <p>MathJax has been used for typesetting math. (The solution is rather hackish for now. But unfortunately that might not change.) Some equations take a bit longer to typeset, unfortunately, try doing a mouseover on the second big blue marker.</p>
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;" id="code_ex1"></PRE>
+<PRE id="code_ex1"></PRE>
 
 <HR/>
 
@@ -184,7 +193,7 @@ function init() {
 <p>The legend can be shifted and the axes can be formatted (see <a href="https://github.com/mbostock/d3/wiki/Formatting" target=_blank>this</a> for more info). And the marker border colors can be changed. (Apologies for the ugliness of Series A.)</p>
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;" id="code_ex2"></PRE>
+<PRE id="code_ex2"></PRE>
 
 <HR/>
 
@@ -238,7 +247,7 @@ function init() {
 <p>Bubble plots... yay? Note the extra parameter <em>z</em> in the series ([<em>x</em>, <em>y</em>, <em>z</em>] or [<em>x</em>, <em>y</em>, <em>z</em>, <em>name</em>], and also <em>bubble_scale</em> in the chart definition. Bubble radius = <em>z</em> &times; <em>bubble_scale</em>.</p>
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;" id="code_ex3"></PRE>
+<PRE id="code_ex3"></PRE>
 <HR/>
 
 <DIV ALIGN=CENTER id="ex4">
@@ -468,12 +477,12 @@ function init() {
 
 <p>Observe that some series can come initially hidden too.</p>
 
-<p>Note also the series that is not shown at all (see code; look for <span class=code>use_series_in_chart</span>; validation is still run on the series though).</p>
+<p>Note also the series that is not shown at all (see code; look for <code>use_series_in_chart</code>; validation is still run on the series though).</p>
 
-<p>Note also the inheritance of the <span class=code>initially_hidden</span> property for each series.</p>
+<p>Note also the inheritance of the <code>initially_hidden</code> property for each series.</p>
 
 <h3>Code:</h3>
-<PRE style="background-color: #eee;" id="code_ex4"></PRE>
+<PRE id="code_ex4"></PRE>
 
 <HR/>
 
