@@ -45,8 +45,12 @@ An example MathJax configuration that works:
     },
     "messageStyle" : "none",
     "HTML-CSS": { availableFonts: ["TeX"] },
-    "delayStartupUntil" : "onload"
+    "delayStartupUntil" : "configured"
   });
+
+  // Call MathJax.Hub.Configured() when ready to have MathJax start up.
+  //    This is important for inline chart descriptions with LaTeX
+  //    mark up. (Otherwise MathJax makes the JSON unparseable.)
 </script>
 ```
 

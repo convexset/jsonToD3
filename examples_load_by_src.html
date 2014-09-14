@@ -32,7 +32,7 @@ pre {
     },
     "messageStyle" : "none",
     "HTML-CSS": { availableFonts: ["TeX"] },
-    "delayStartupUntil" : "onload"
+    "delayStartupUntil" : "configured"
   });
 </script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
@@ -50,6 +50,8 @@ var chartArray = null
 function init() {
   chartArray = jsonToD3.work()
   //chartArray = jsonToD3.work_NoMathJax()
+
+  MathJax.Hub.Configured()
 }
 </script>
 
