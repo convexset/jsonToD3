@@ -17,7 +17,7 @@ This code is licensed under the terms of the MIT License.
 - Allows from LaTeX markup in the title, axis labels, legend labels and tool tips via barely passable integration with MathJax
 - Setting "inheritance" from the chart to component data series (see below)
 - Seems to work reasonably well in Chrome, FireFox and Safari (for everything else, there's MasterCard)
-- When chart load fails, replace with a captioned (ERR-TEXT) and styled (ERR-IMG-STYLE) image (ERR-IMG-SRC) in a styled (ERR-STYLE) DIV.
+- When chart load fails, replace with a captioned (ERR-TEXT) and styled (ERR-IMG-STYLE) image (ERR-IMG-SRC) in a styled (ERR-STYLE) DIV with some class (ERR-CLASS). In contrast, successful renders tack on a caption if RENDER-TEXT is specified, with some style (RENDER-TEXT-STYLE) and some class (RENDER-TEXT-CLASS).
 
 
 ### On the Horizon

@@ -23,7 +23,7 @@ var jsonToD3 = {
 			chart_info = JSON.parse(s)
 		} catch (error) {
 			// Rethrow...
-			console.log("Parsing raw JSON failed.")
+			console.log("JSON To D3: Parsing raw JSON failed.")
 			chart_info = null
 			throw error
 		}
@@ -721,7 +721,7 @@ var jsonToD3 = {
 	makeChartCanvas: function(plotTag, chart_info) {
 		if (chart_info == null) { throw "Expected: JSON object in chart_info (got: null)" }
 		if ((!jsonToD3.validateChartInfo(chart_info)) || (!jsonToD3.validateSeriesInfo(chart_info))) {
-			var msg = "Failed to validate data series."
+			var msg = "JSON To D3: Failed to validate data series."
 			console.log(msg)
 			console.log("plotTag", plotTag)
 			console.log("chart_info", chart_info)
@@ -729,7 +729,6 @@ var jsonToD3 = {
 		}
 
 		plotTag.setAttribute('plottype', chart_info.plot_type)
-		// console.log(chart_info.plot_type, chart_info)
 
 		var updateFunctions = {}
 		var managementFunctions = {}
@@ -1453,30 +1452,69 @@ var jsonToD3 = {
 					chartCanvas = jsonToD3.processTag(plotTag)
 					plotTag.setAttribute('rendered', true)
 					chartArray.push(chartCanvas)
+
+					render_text = plotTag.getAttribute("RENDER-TEXT")
+					render_text_class = plotTag.getAttribute("RENDER-TEXT-CLASS")
+					render_text_style = plotTag.getAttribute("RENDER-TEXT-STYLE")
+
+					if (render_text == null) { render_text = "" } else { render_text = render_text.trim() }
+					if (render_text_class == null) { render_text_class = "" } else { render_text_class = render_text_class.trim() }
+					if (render_text_style == null) { render_text_style = "" } else { render_text_style = render_text_style.trim() }
+
+					console.log("JSON To D3: Successful parse.", plotTag, chartCanvas)
+					if (render_text != "") {
+						caption_div = document.createElement("div")
+						if (render_text_style != "") { caption_div.setAttribute("style", render_text_style) }
+						if (render_text_class != "") { caption_div.setAttribute("class", render_text_class) }
+						caption_div.innerHTML = render_text
+						plotTag.appendChild(caption_div)
+					}
 				} catch (error) {
 					chartCanvas = null
 					plotTag.setAttribute('rendered', false)
 
-					err_img_src = plotTag.getAttribute("ERR-IMG-SRC").trim()
-					err_img_style = plotTag.getAttribute("ERR-IMG-STYLE").trim()
-					err_text = plotTag.getAttribute("ERR-TEXT").trim()
-					err_style = plotTag.getAttribute("ERR-STYLE").trim()
+					err_img_src = plotTag.getAttribute("ERR-IMG-SRC")
+					err_img_style = plotTag.getAttribute("ERR-IMG-STYLE")
+					err_text = plotTag.getAttribute("ERR-TEXT")
+					err_style = plotTag.getAttribute("ERR-STYLE")
+					err_class = plotTag.getAttribute("ERR-CLASS")
 
 					console.log("JSON To D3: Error parsing tag.", plotTag, error)
-					console.log("JSON To D3: Displaying ERR-IMG-SRC of " + err_img_src)
-					console.log("JSON To D3: Displaying ERR-IMG-STYLE of " + err_img_style)
-					console.log("JSON To D3: Displaying ERR-TEXT of " + err_text)
-					console.log("JSON To D3: Using ERR-STYLE of " + err_style)
+
+					if (err_img_src == null) { err_img_src = "" } else {
+						console.log("\tDisplaying ERR-IMG-SRC of \"" + err_img_src + "\"")
+						err_img_src = err_img_src.trim()
+					}
+
+					if (err_img_style == null) { err_img_style = "" } else {
+						console.log("\tDisplaying ERR-IMG-STYLE of \"" + err_img_style + "\"")
+						err_img_style = err_img_style.trim()
+					}
+					if (err_text == null) { err_text = "" } else {
+						console.log("\tDisplaying ERR-TEXT of \"" + err_text + "\"")
+						err_text = err_text.trim()
+					}
+					if (err_style == null) { err_style = "" } else {
+						console.log("\tUsing ERR-STYLE of \"" + err_style + "\"")
+						err_style = err_style.trim()
+					}
+					if (err_class == null) { err_class = "" } else {
+						console.log("\tUsing ERR-CLASS of \"" + err_class + "\"")
+						err_class = err_class.trim()
+					}
 
 					if ((err_img_src != "") || (err_text != "")) {
 						plotTag.innerHTML = ""
+
 						err_div = document.createElement("div")
-						err_div.setAttribute("style", err_style)
+						if (err_class != "") { err_div.setAttribute("class", err_class) }
+						if (err_style != "") { err_div.setAttribute("style", err_style) }
+
 						if (err_img_src != "") {
 							some_div = document.createElement("div")
 							some_img = document.createElement("img")
 							some_img.setAttribute("src", err_img_src)
-							some_img.setAttribute("style", err_img_style)
+							if (err_img_style != "") { some_img.setAttribute("style", err_img_style) }
 							some_div.appendChild(some_img)
 							err_div.appendChild(some_div)
 						}
@@ -1500,7 +1538,7 @@ var jsonToD3 = {
 			if ((!usingMathJax) || jsonToD3.canMathJaxTypeSet()) {
 				for (var i = 0; i < chartArray.length; i++) {
 					for (var k in chartArray[i]["updateFunctions"]) {
-						chartArray[i]["updateFunctions"][k]()						
+						chartArray[i]["updateFunctions"][k]()
 					}
 				}
 			}
