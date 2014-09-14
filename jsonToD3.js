@@ -1,7 +1,7 @@
 /*
 JSON to D3 is a simple JavaScript utility for converting JSON-formatted text or JSON into D3 charts.
 
-Version 0.1.1
+Version 0.1.2
 
 Original Motivation: To create a "text" to "charts" JavaScript utility so chart settings and data
 might be embedded in directly in version-control friendly static documents like HTML... or JSON
