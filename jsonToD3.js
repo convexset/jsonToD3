@@ -1461,7 +1461,7 @@ var jsonToD3 = {
 					if (render_text_class == null) { render_text_class = "" } else { render_text_class = render_text_class.trim() }
 					if (render_text_style == null) { render_text_style = "" } else { render_text_style = render_text_style.trim() }
 
-					console.log("JSON To D3: Successful parse.", plotTag, chartCanvas)
+					// console.log("JSON To D3: Successful render.", plotTag, chartCanvas)
 					if (render_text != "") {
 						caption_div = document.createElement("div")
 						if (render_text_style != "") { caption_div.setAttribute("style", render_text_style) }
