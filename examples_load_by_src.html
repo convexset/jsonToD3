@@ -21,9 +21,6 @@ pre {
 }
 </style>
 
-<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
-<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
-
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
     extensions: ["tex2jax.js"],
@@ -38,16 +35,24 @@ pre {
     "delayStartupUntil" : "onload"
   });
 </script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
 <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
+<!--
+<script type="text/javascript" src="__jquery-2.1.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="__d3.min.js" charset="utf-8"></script>
+-->
 
 <script type="text/javascript" src="jsonToD3.js"></script>
 
 <script type="text/javascript">
 var chartArray = null
 function init() {
-	chartArray = jsonToD3.work();
+  chartArray = jsonToD3.work()
+  //chartArray = jsonToD3.work_NoMathJax()
 }
 </script>
+
 
 </HEAD>
 <BODY onLoad="init()">

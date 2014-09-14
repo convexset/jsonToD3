@@ -21,10 +21,6 @@ pre {
 }
 </style>
 
-<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
-<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
-
-
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
     extensions: ["tex2jax.js"],
@@ -39,7 +35,13 @@ pre {
     "delayStartupUntil" : "onload"
   });
 </script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js" charset="utf-8"></script>
 <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
+<!--
+<script type="text/javascript" src="__jquery-2.1.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="__d3.min.js" charset="utf-8"></script>
+-->
 
 <script type="text/javascript" src="jsonToD3.js"></script>
 
@@ -47,6 +49,7 @@ pre {
 var chartArray = null
 function init() {
 	chartArray = jsonToD3.work()
+	//chartArray = jsonToD3.work_NoMathJax()
 }
 </script>
 
@@ -93,7 +96,7 @@ function init() {
 			"marker_opacity": 0.6,
 			"marker_radius": 10,
 			"data": [
-				[2000, 50000, "$\\alpha^{\\omega}$"],
+				[2000, 50000, "$\\alpha^{\\omega}$", "Pre-formatted Value: Fifty Thousand = 50k = 50,000"],
 				[2001, 49000, "$\\displaystyle\\lim\\limits_{x\\rightarrow 0} \\frac{\\sin x}{x} = 1$"],
 				[2002, 47500, "$w^{T}(I-P)^{-1}q^{(j)}$"],
 				[2004, 39750, "Yummy $\\pi$"]
@@ -103,20 +106,22 @@ function init() {
 			"series_name": "Series $\\beta$",
 			"draw_line": false,
 			"data": [
-				[2000, 30000],
-				[2001, 20000],
-				[2002.5, 23500, "Woo Hoo!!"],
+				[2000, 30000, "", "Pre-formatted Value: [2k, 30k]"],
+				[2001, 20000, "Named Point (The others in the series aren't)"],
+				[2002.5, 23500],
 				[2002.75, 24500],
 				[2003.5, 30750]
 			]
 		}
-	]
+]
 }
 </SCATTERPLOT>
 </DIV>
 
 <h3>The Chart</h3>
-<p>Points in a data series are usually in the form [<em>x</em>, <em>y</em>], but may be given names as in [<em>x</em>, <em>y</em>, <em>z</em>].</p>
+<p>Points in a data series are usually in the form [<em>x</em>, <em>y</em>] (or [<em>x</em>, <em>y</em>, <em>z</em>]), but may be given names as in [<em>x</em>, <em>y</em>, <em>name</em>] (or [<em>x</em>, <em>y</em>, <em>z</em>, <em>name</em>]). (Have a look at Series $\beta$ starting from the second point.)</p>
+
+<p>In fact, one can go a step further and determine the value displayed in the tooltip, usually <b>(<em>x</em>, <em>y</em>)</b> and with entries like as [<em>x</em>, <em>y</em>, <em>name</em>, <em>display_value</em>] (or [<em>x</em>, <em>y</em>, <em>z</em>, <em>name</em>, <em>display_value</em>]), replace the default with <b><em>display_value</em></b>. One thing to note is that the point has to be named. (Empty string names will be treated as non-names.) Try to use a string for it outright. (See this at work in the points on the left.)</p>
 
 <p>MathJax has been used for typesetting math. (The solution is rather hackish for now. But unfortunately that might not change.) Some equations take a bit longer to typeset, unfortunately, try doing a mouseover on the second big blue marker.</p>
 
@@ -159,7 +164,7 @@ function init() {
 				["15 Mar 2014", 49080],
 				["15 Jul 2014", 47500],
 				["15 Oct 2014", 39750]
-			]
+		]
 		},
 		{
 			"series_name": "Series B",
@@ -184,7 +189,7 @@ function init() {
 				["15 Sep 2014", 31750]
 			]
 		}
-	]
+]
 }
 </SCATTERPLOT>
 </DIV>
@@ -197,7 +202,258 @@ function init() {
 
 <HR/>
 
+
 <DIV ALIGN=CENTER id="ex3">
+<SCATTERPLOT>
+{
+	"dimensions" : {"width": 800, "height": 400},
+	"margins" : {"top": 30, "right": 25, "bottom": 40, "left": 60},
+	"axes" : {
+		"x_label": "Age Group",
+		"y_label": "Persons (thousands)",
+		"x_min": -0.1,
+		"y_min": 0,
+		"y_axis_format": ".1f"
+	},
+
+	"title": "Population Demographics of Singapore (June 2013)",
+	"show_legend": true,
+
+	"use_bars": true,
+	"bar_opacity": 0.7,
+	"bar_border_color": "#000",
+	"bar_border_thickness": 1,
+	"marker_radius": 4,
+
+
+	"data_series" : [
+		{
+			"series_name": "All",
+			"toggleable": false,
+			"data": [
+				[[0, 5], 183.3, "Ages 0 - 4"],
+				[[5, 10], 205.7, "Ages 5 - 9"],
+				[[10, 15], 226.2, "Ages 10 - 14"],
+				[[15, 20], 255.1, "Ages 15 - 19"],
+				[[20, 25], 266.9, "Ages 20 - 24"],
+				[[25, 30], 255.6, "Ages 25 - 29"],
+				[[30, 35], 296.9, "Ages 30 - 34"],
+				[[35, 40], 305.5, "Ages 35 - 39"],
+				[[40, 45], 312.6, "Ages 40 - 44"],
+				[[45, 50], 316.3, "Ages 45 - 49"],
+				[[50, 55], 313.0, "Ages 50 - 54"],
+				[[55, 60], 281.1, "Ages 55 - 59"],
+				[[60, 65], 222.2, "Ages 60 - 64"],
+				[[65, 70], 145.8, "Ages 65 - 69"],
+				[[70, 75], 105.7, "Ages 70 - 74"],
+				[[75, 80], 70.6, "Ages 75 - 79"],
+				[[80, 85], 46.2, "Ages 80 - 84"],
+				[[85, 90], 36.1, "Ages 85 & Over"]
+			]
+		},
+		{
+			"series_name": "Chinese",
+			"data": [
+				[[0, 5], 127.4, "Ages 0 - 4"],
+				[[5, 10], 134.5, "Ages 5 - 9"],
+				[[10, 15], 152.4, "Ages 10 - 14"],
+				[[15, 20], 179.4, "Ages 15 - 19"],
+				[[20, 25], 190.5, "Ages 20 - 24"],
+				[[25, 30], 184.5, "Ages 25 - 29"],
+				[[30, 35], 215.1, "Ages 30 - 34"],
+				[[35, 40], 223.6, "Ages 35 - 39"],
+				[[40, 45], 231.4, "Ages 40 - 44"],
+				[[45, 50], 233.4, "Ages 45 - 49"],
+				[[50, 55], 237.5, "Ages 50 - 54"],
+				[[55, 60], 223.0, "Ages 55 - 59"],
+				[[60, 65], 181.8, "Ages 60 - 64"],
+				[[65, 70], 121.6, "Ages 65 - 69"],
+				[[70, 75], 90.0, "Ages 70 - 74"],
+				[[75, 80], 58.4, "Ages 75 - 79"],
+				[[80, 85], 38.5, "Ages 80 - 84"],
+				[[85, 90], 30.8, "Ages 85 & Over"]
+			]
+		},
+		{
+			"series_name": "Malay",
+			"data": [
+				[[0, 5], [127.4, 158], "Ages 0 - 4"],
+				[[5, 10], [134.5, 167.9], "Ages 5 - 9"],
+				[[10, 15], [152.4, 192.3], "Ages 10 - 14"],
+				[[15, 20], [179.4, 225.2], "Ages 15 - 19"],
+				[[20, 25], [190.5, 239.2], "Ages 20 - 24"],
+				[[25, 30], [184.5, 225.3], "Ages 25 - 29"],
+				[[30, 35], [215.1, 249.5], "Ages 30 - 34"],
+				[[35, 40], [223.6, 253.4], "Ages 35 - 39"],
+				[[40, 45], [231.4, 264.7], "Ages 40 - 44"],
+				[[45, 50], [233.4, 275.6], "Ages 45 - 49"],
+				[[50, 55], [237.5, 279.5], "Ages 50 - 54"],
+				[[55, 60], [223, 256.4], "Ages 55 - 59"],
+				[[60, 65], [181.8, 204.3], "Ages 60 - 64"],
+				[[65, 70], [121.6, 135.1], "Ages 65 - 69"],
+				[[70, 75], [90, 98.7], "Ages 70 - 74"],
+				[[75, 80], [58.4, 65.5], "Ages 75 - 79"],
+				[[80, 85], [38.5, 42.6], "Ages 80 - 84"],
+				[[85, 90], [30.8, 33.4], "Ages 85 & Over"]
+			]
+		},
+		{
+			"series_name": "Indian",
+			"data": [
+				[[0, 5], [158, 176.3], "Ages 0 - 4"],
+				[[5, 10], [167.9, 195.3], "Ages 5 - 9"],
+				[[10, 15], [192.3, 216.9], "Ages 10 - 14"],
+				[[15, 20], [225.2, 247.8], "Ages 15 - 19"],
+				[[20, 25], [239.2, 261.5], "Ages 20 - 24"],
+				[[25, 30], [225.3, 249.2], "Ages 25 - 29"],
+				[[30, 35], [249.5, 283.8], "Ages 30 - 34"],
+				[[35, 40], [253.4, 289.1], "Ages 35 - 39"],
+				[[40, 45], [264.7, 296.6], "Ages 40 - 44"],
+				[[45, 50], [275.6, 304], "Ages 45 - 49"],
+				[[50, 55], [279.5, 304.5], "Ages 50 - 54"],
+				[[55, 60], [256.4, 275.8], "Ages 55 - 59"],
+				[[60, 65], [204.3, 218.6], "Ages 60 - 64"],
+				[[65, 70], [135.1, 143.7], "Ages 65 - 69"],
+				[[70, 75], [98.7, 104.5], "Ages 70 - 74"],
+				[[75, 80], [65.5, 69.7], "Ages 75 - 79"],
+				[[80, 85], [42.6, 45.5], "Ages 80 - 84"],
+				[[85, 90], [33.4, 35.5], "Ages 85 & Over"]
+			]
+		},
+		{
+			"series_name": "Others",
+			"data": [
+				[[0, 5], [176.3, 183.3], "Ages 0 - 4"],
+				[[5, 10], [195.3, 205.7], "Ages 5 - 9"],
+				[[10, 15], [216.9, 226.2], "Ages 10 - 14"],
+				[[15, 20], [247.8, 255], "Ages 15 - 19"],
+				[[20, 25], [261.5, 267], "Ages 20 - 24"],
+				[[25, 30], [249.2, 255.7], "Ages 25 - 29"],
+				[[30, 35], [283.8, 296.9], "Ages 30 - 34"],
+				[[35, 40], [289.1, 305.5], "Ages 35 - 39"],
+				[[40, 45], [296.6, 312.5], "Ages 40 - 44"],
+				[[45, 50], [304, 316.3], "Ages 45 - 49"],
+				[[50, 55], [304.5, 313], "Ages 50 - 54"],
+				[[55, 60], [275.8, 281.2], "Ages 55 - 59"],
+				[[60, 65], [218.6, 222.1], "Ages 60 - 64"],
+				[[65, 70], [143.7, 145.8], "Ages 65 - 69"],
+				[[70, 75], [104.5, 105.8], "Ages 70 - 74"],
+				[[75, 80], [69.7, 70.6], "Ages 75 - 79"],
+				[[80, 85], [45.5, 46.2], "Ages 80 - 84"],
+				[[85, 90], [35.5, 36], "Ages 85 & Over"]
+			]
+		},
+		{
+			"series_name": "Chinese (H)",
+			"initially_hidden": true,
+			"data": [
+				[[0, 3.47517730496454], 183.3, "Ages 0 - 4", "127.4"],
+				[[5, 8.26932425862907], 205.7, "Ages 5 - 9", 134.5],
+				[[10, 13.368700265252], 226.2, "Ages 10 - 14", 152.4],
+				[[15, 18.516268130145], 255.1, "Ages 15 - 19", 179.4],
+				[[20, 23.568752341701], 266.9, "Ages 20 - 24", 190.5],
+				[[25, 28.6091549295775], 255.6, "Ages 25 - 29", 184.5],
+				[[30, 33.6224317952172], 296.9, "Ages 30 - 34", 215.1],
+				[[35, 38.6595744680851], 305.5, "Ages 35 - 39", 223.6],
+				[[40, 43.7012156110045], 312.6, "Ages 40 - 44", 231.4],
+				[[45, 48.6895352513437], 316.3, "Ages 45 - 49", 233.4],
+				[[50, 53.7939297124601], 313, "Ages 50 - 54", 237.5],
+				[[55, 58.9665599430808], 281.1, "Ages 55 - 59", 223],
+				[[60, 64.0909090909091], 222.2, "Ages 60 - 64", 181.8],
+				[[65, 69.1700960219479], 145.8, "Ages 65 - 69", 121.6],
+				[[70, 74.2573320719016], 105.7, "Ages 70 - 74", 90],
+				[[75, 79.1359773371105], 70.6, "Ages 75 - 79", 58.4],
+				[[80, 84.1666666666667], 46.2, "Ages 80 - 84", 38.5],
+				[[85, 89.2659279778393], 36.1, "Ages 85 & Over", 30.8]
+			]
+		},
+		{
+			"series_name": "Malay (H)",
+			"initially_hidden": true,
+			"data": [
+				[[3.47517730496454, 4.30987452264048], 183.3, "Ages 0 - 4", 30.6],
+				[[8.26932425862907, 9.08118619348566], 205.7, "Ages 5 - 9", 33.4],
+				[[13.368700265252, 14.2506631299735], 226.2, "Ages 10 - 14", 39.9],
+				[[18.516268130145, 19.4139553116425], 255.1, "Ages 15 - 19", 45.8],
+				[[23.568752341701, 24.4810790558262], 266.9, "Ages 20 - 24", 48.7],
+				[[28.6091549295775, 29.4072769953052], 255.6, "Ages 25 - 29", 40.8],
+				[[33.6224317952172, 34.2017514314584], 296.9, "Ages 30 - 34", 34.4],
+				[[38.6595744680851, 39.1472995090016], 305.5, "Ages 35 - 39", 29.8],
+				[[43.7012156110045, 44.2338451695457], 312.6, "Ages 40 - 44", 33.3],
+				[[48.6895352513437, 49.3566234587417], 316.3, "Ages 45 - 49", 42.2],
+				[[53.7939297124601, 54.4648562300319], 313, "Ages 50 - 54", 42],
+				[[58.9665599430808, 59.5606545713269], 281.1, "Ages 55 - 59", 33.4],
+				[[64.0909090909091, 64.5972097209721], 222.2, "Ages 60 - 64", 22.5],
+				[[69.1700960219479, 69.6330589849108], 145.8, "Ages 65 - 69", 13.5],
+				[[74.2573320719016, 74.6688741721854], 105.7, "Ages 70 - 74", 8.7],
+				[[79.1359773371105, 79.6388101983003], 70.6, "Ages 75 - 79", 7.1],
+				[[84.1666666666667, 84.6103896103896], 46.2, "Ages 80 - 84", 4.1],
+				[[89.2659279778393, 89.6260387811634], 36.1, "Ages 85 & Over", 2.6]
+			]
+		},
+		{
+			"series_name": "Indian (H)",
+			"initially_hidden": true,
+			"data": [
+				[[4.30987452264048, 4.80905619203492], 183.3, "Ages 0 - 4", 18.3],
+				[[9.08118619348566, 9.74720466699076], 205.7, "Ages 5 - 9", 27.4],
+				[[14.2506631299735, 14.7944297082228], 226.2, "Ages 10 - 14", 24.6],
+				[[19.4139553116425, 19.8569188553508], 255.1, "Ages 15 - 19", 22.6],
+				[[24.4810790558262, 24.8988385162982], 266.9, "Ages 20 - 24", 22.3],
+				[[29.4072769953052, 29.8748043818466], 255.6, "Ages 25 - 29", 23.9],
+				[[34.2017514314584, 34.7793869989896], 296.9, "Ages 30 - 34", 34.3],
+				[[39.1472995090016, 39.7315875613748], 305.5, "Ages 35 - 39", 35.7],
+				[[44.2338451695457, 44.744081893794], 312.6, "Ages 40 - 44", 31.9],
+				[[49.3566234587417, 49.8055643376541], 316.3, "Ages 45 - 49", 28.4],
+				[[54.4648562300319, 54.8642172523962], 313, "Ages 50 - 54", 25],
+				[[59.5606545713269, 59.9057274991106], 281.1, "Ages 55 - 59", 19.4],
+				[[64.5972097209721, 64.9189918991899], 222.2, "Ages 60 - 64", 14.3],
+				[[69.6330589849108, 69.9279835390947], 145.8, "Ages 65 - 69", 8.6],
+				[[74.6688741721854, 74.9432355723746], 105.7, "Ages 70 - 74", 5.8],
+				[[79.6388101983003, 79.9362606232295], 70.6, "Ages 75 - 79", 4.2],
+				[[84.6103896103896, 84.9242424242424], 46.2, "Ages 80 - 84", 2.9],
+				[[89.6260387811634, 89.9168975069252], 36.1, "Ages 85 & Over", 2.1]
+			]
+		},
+		{
+			"series_name": "Others (H)",
+			"initially_hidden": true,
+			"data": [
+				[[4.80905619203492, 5], 183.3, "Ages 0 - 4", 7],
+				[[9.74720466699076, 10], 205.7, "Ages 5 - 9", 10.4],
+				[[14.7944297082228, 15], 226.2, "Ages 10 - 14", 9.3],
+				[[19.8569188553508, 19.9980399843199], 255.1, "Ages 15 - 19", 7.2],
+				[[24.8988385162982, 25.0018733608093], 266.9, "Ages 20 - 24", 5.5],
+				[[29.8748043818466, 30.0019561815336], 255.6, "Ages 25 - 29", 6.5],
+				[[34.7793869989896, 35], 296.9, "Ages 30 - 34", 13.1],
+				[[39.7315875613748, 40], 305.5, "Ages 35 - 39", 16.4],
+				[[44.744081893794, 44.9984005118362], 312.6, "Ages 40 - 44", 15.9],
+				[[49.8055643376541, 50], 316.3, "Ages 45 - 49", 12.3],
+				[[54.8642172523962, 55], 313, "Ages 50 - 54", 8.5],
+				[[59.9057274991106, 60.0017787264319], 281.1, "Ages 55 - 59", 5.4],
+				[[64.9189918991899, 64.9977497749775], 222.2, "Ages 60 - 64", 3.5],
+				[[69.9279835390947, 70], 145.8, "Ages 65 - 69", 2.1],
+				[[74.9432355723746, 75.0047303689688], 105.7, "Ages 70 - 74", 1.3],
+				[[79.9362606232295, 80], 70.6, "Ages 75 - 79", 0.9],
+				[[84.9242424242424, 85], 46.2, "Ages 80 - 84", 0.7],
+				[[89.9168975069252, 89.9861495844875], 36.1, "Ages 85 & Over", 0.5]
+			]
+		}
+	]
+}
+</SCATTERPLOT>
+</DIV>
+
+<h3>The Chart</h3>
+<p>This is an attempt at a bar chart. Note that one series cannot be toggled. The "size" of each bar depends on its height and is independent of width. A design decision that is probably stupid. But it is ameliorated by enabling the user to add an additional entry in the data for it's "display value", as mentioned in a previous example. Again, it might be useful to make that a string directly. (See all the (H) series. Also note the discrepancy due to rounding.)</p>
+
+<h3>Code:</h3>
+<PRE id="code_ex3"></PRE>
+
+<HR/>
+
+
+<DIV ALIGN=CENTER id="ex4">
 <BUBBLEPLOT>
 {
 	"title": "$\\Omega$-Bubbles (Tweaking the Axis Tick Counts Approximately)",
@@ -238,7 +494,7 @@ function init() {
 				[2005, 43500, 0.5, "Diamond ($\\alpha$)"]
 			]
 		}
-	]
+]
 }
 </BUBBLEPLOT>
 </DIV>
@@ -247,10 +503,12 @@ function init() {
 <p>Bubble plots... yay? Note the extra parameter <em>z</em> in the series ([<em>x</em>, <em>y</em>, <em>z</em>] or [<em>x</em>, <em>y</em>, <em>z</em>, <em>name</em>], and also <em>bubble_scale</em> in the chart definition. Bubble radius = <em>z</em> &times; <em>bubble_scale</em>.</p>
 
 <h3>Code:</h3>
-<PRE id="code_ex3"></PRE>
+<PRE id="code_ex4"></PRE>
 <HR/>
 
-<DIV ALIGN=CENTER id="ex4">
+
+
+<DIV ALIGN=CENTER id="ex5">
 <SCATTERPLOT>
 {
 	"dimensions" : {"width": 800, "height": 400},
@@ -467,7 +725,7 @@ function init() {
 				[2, 1]
 			]
 		}
-	]
+]
 }
 </SCATTERPLOT>
 </DIV>
@@ -482,14 +740,14 @@ function init() {
 <p>Note also the inheritance of the <code>initially_hidden</code> property for each series.</p>
 
 <h3>Code:</h3>
-<PRE id="code_ex4"></PRE>
+<PRE id="code_ex5"></PRE>
 
 <HR/>
 
 
 <script>
 // Before onload...
-var example_indices = [1,2,3,4]
+var example_indices = [1,2,3,4,5]
 for (var i = 0; i < example_indices.length; i++) {
 	var ex_id = "ex" + example_indices[i]
 	var pre_id = "code_ex" + example_indices[i]

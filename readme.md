@@ -1,4 +1,4 @@
-JSON to D3 (v0.1.2)
+JSON to D3 (v0.1.3)
 ---
 
 JSON to D3 is a simple JavaScript utility for converting JSON-formatted text or JSON into D3 charts.
@@ -11,7 +11,7 @@ This code is licensed under the terms of the MIT License.
 
 
 ### Features
-- Does reasonably nice scatter plots (from <SCATTERPLOT>) and bubble plots (from <BUBBLEPLOT>)
+- Does reasonably nice scatter plots and bar charts (from <SCATTERPLOT>) and bubble plots (from <BUBBLEPLOT>)
 - Processes chart info inline (in HTML tags) or loaded from somewhere specified by the SRC attribute
 - Allows hiding of data series if things are too cluttered (mouse over the legend to find out more)
 - Allows from LaTeX markup in the title, axis labels, legend labels and tool tips via barely passable integration with MathJax
@@ -21,7 +21,6 @@ This code is licensed under the terms of the MIT License.
 
 
 ### On the Horizon
-- Bar charts
 - Pie charts
 - Graph (as in "network") plots
 
@@ -54,7 +53,7 @@ An example MathJax configuration that works:
 
 ### Settings:
 - Data series settings include:
-    * use_series_in_chart (boolean; default: true; quite meaningless to set it at the chart level)
+    * use_series_in_chart (boolean; default: true)
     * initially_hidden (boolean; default: false)
     * use_markers (boolean; default: true)
     * marker_opacity (0 to 1; default: 1)
@@ -76,6 +75,9 @@ An example MathJax configuration that works:
         + cardinal-closed - a closed Cardinal spline, as in a loop.
         + monotone - cubic interpolation that preserves monotonicity in y
     * bubble_scale (default: 25)
+    * bar_opacity (0 to 1; default: 1)
+    * bar_border_color (rgb; default: "#000" / "#000000")
+    * bar_border_thickness (positive integer; default: 1)
 - Chart level settings
     * dimensions
         + width

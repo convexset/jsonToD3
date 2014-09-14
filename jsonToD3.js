@@ -1,7 +1,7 @@
 /*
 JSON to D3 is a simple JavaScript utility for converting JSON-formatted text or JSON into D3 charts.
 
-Version 0.1.2
+Version 0.1.3
 
 Original Motivation: To create a "text" to "charts" JavaScript utility so chart settings and data
 might be embedded in directly in version-control friendly static documents like HTML... or JSON
@@ -151,16 +151,25 @@ var jsonToD3 = {
 	validatePointPlotSettings: function(info, plot_type, location, parent) {
 		var errors = []
 
+		var DEFAULT_USE_SERIES = true
 		if (info.use_series_in_chart != null) {
 			info.use_series_in_chart = true && info.use_series_in_chart
 		} else {
-			info.use_series_in_chart = (parent != null) ? parent.use_series_in_chart : true
+			info.use_series_in_chart = (parent != null) ? parent.use_series_in_chart : DEFAULT_USE_SERIES
 		}
 
+		var DEFAULT_INITIALLY_HIDDEN = false
 		if (info.initially_hidden != null) {
 			info.initially_hidden = true && info.initially_hidden
 		} else {
-			info.initially_hidden = (parent != null) ? parent.initially_hidden : false
+			info.initially_hidden = (parent != null) ? parent.initially_hidden : DEFAULT_INITIALLY_HIDDEN
+		}
+
+		var DEFAULT_TOGGLEABLE = true
+		if (info.toggleable != null) {
+			info.toggleable = true && info.toggleable
+		} else {
+			info.toggleable = (parent != null) ? parent.toggleable : DEFAULT_TOGGLEABLE
 		}
 
 		////////////////////////////////////////////////////////////////
@@ -204,10 +213,11 @@ var jsonToD3 = {
 			errors.push("Invalid marker_border_color at " + location.toString() + ".")
 		}
 
+		var DEFAULT_USE_MARKERS = true
 		if (info.use_markers != null) {
 			info.use_markers = true && info.use_markers
 		} else {
-			info.use_markers = (parent != null) ? parent.use_markers : true
+			info.use_markers = (parent != null) ? parent.use_markers : DEFAULT_USE_MARKERS
 		}
 
 
@@ -258,11 +268,63 @@ var jsonToD3 = {
 		}
 
 		////////////////////////////////////////////////////////////////
+		// Bars
+		////////////////////////////////////////////////////////////////
+
+		var DEFAULT_USE_BARS = false
+		if (info.use_bars != null) {
+			info.use_bars = true && info.use_bars
+		} else {
+			info.use_bars = (parent != null) ? parent.use_bars : DEFAULT_USE_BARS
+		}
+		info.draw_line = info.draw_line && (!info.use_bars)
+		info.use_markers = info.use_markers && (!info.use_bars)
+
+		var DEFAULT_BAR_OPACITY = 1
+		if (info.bar_opacity != null) {
+			info.bar_opacity = parseFloat(info.bar_opacity.toString())
+			if (isNaN(info.bar_opacity)) {
+				errors.push("Error parsing bar_opacity at " + location.toString() + ".")
+			}
+		} else {
+			info.bar_opacity = (parent != null) ? parent.bar_opacity : DEFAULT_BAR_OPACITY
+		}
+		if ((info.bar_opacity > 1) || (info.bar_opacity < 0)) {
+			errors.push("Invalid bar_opacity at " + location.toString() + ".")
+		}
+
+		var DEFAULT_BAR_BORDER_COLOR = "#000"
+		if (info.bar_border_color != null) {
+			info.bar_border_color = info.bar_border_color.toString()
+		} else {
+			info.bar_border_color = (parent != null) ? parent.bar_border_color : DEFAULT_BAR_BORDER_COLOR
+		}
+		if ((info.bar_border_color.toLowerCase() != "none") && (!jsonToD3.matchRGB(info.bar_border_color))) {
+			errors.push("Invalid bar_border_color at " + location.toString() + ".")
+		}
+
+		var DEFAULT_BAR_BORDER_THICKNESS = 1
+		if (info.bar_border_thickness != null) {
+			try {
+				info.bar_border_thickness = parseFloat(info.bar_border_thickness.toString())
+			} catch (e) {
+				errors.push("Error parsing bar_border_thickness at " + location.toString() + ".")
+			}
+		} else {
+			info.bar_border_thickness = (parent != null) ? parent.bar_border_thickness : DEFAULT_BAR_BORDER_THICKNESS
+		}
+		if (info.bar_border_thickness < 0) {
+			errors.push("Invalid bar_border_thickness at " + location.toString() + ".")
+		}
+
+
+		////////////////////////////////////////////////////////////////
 		// Bubble Plot
 		////////////////////////////////////////////////////////////////
 		if (plot_type == "BUBBLEPLOT") {
 			info.use_markers = true
 			info.draw_line = false
+			info.use_bars = false
 
 			var DEFAULT_BUBBLE_SCALE = 25
 			if (info.bubble_scale != null) {
@@ -442,10 +504,11 @@ var jsonToD3 = {
 			chart_info.legend_offset_y = 0
 		}
 
+		DEFAULT_SHOW_LEGEND = true
 		if (chart_info.show_legend != null) {
 			chart_info.show_legend = true && chart_info.show_legend
 		} else {
-			chart_info.show_legend = true
+			chart_info.show_legend = DEFAULT_SHOW_LEGEND
 		}
 
 		if ((chart_info.tooltip_color != null) && (jsonToD3.matchRGB(chart_info.tooltip_color))) {
@@ -520,7 +583,7 @@ var jsonToD3 = {
 		}
 	},
 
-	checkAndParsePointsAndLabel: function(ds, plot_type, hasDateXAxis, hasDateYAxis) {
+	checkAndParsePointsAndLabel: function(ds, plot_type, axes_info) {
 		var errors = []
 		var data = ds.data
 
@@ -529,6 +592,9 @@ var jsonToD3 = {
 		data_description.y_min = Infinity
 		data_description.x_max = -Infinity
 		data_description.y_max = -Infinity
+
+		hasDateXAxis = axes_info.has_datetime_x_axis
+		hasDateYAxis = axes_info.has_datetime_y_axis
 
 		var data_dimension = 2
 		if (plot_type == "SCATTERPLOT") {
@@ -555,33 +621,133 @@ var jsonToD3 = {
 
 			var newPoint = {}
 
+			// Parse x-axis data
+			newPoint.x_dim = 1
 			if (hasDateXAxis) {
-				newPoint.x = new Date(Date.parse(point[0]))
-				if (isNaN(newPoint.x)) {
-					errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing date as x-coordinate).")
+				if( Object.prototype.toString.call( point[0] ) === '[object Array]' ) {
+					pt_arr = point[0]
+					pt_min = null
+					pt_max = null
+					newPoint.x_dim = pt_arr.length
+					newPoint.x = parsed
+					for (var k = 0; k < pt_arr.length; k++) {
+						parsed = new Date(Date.parse(pt_arr[k]))
+						newPoint['x' + k] = parsed
+						if (isNaN(parsed)) {
+							errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing date data for x-coordinate.")
+						} else {
+							pt_min = ((pt_min == null) || (pt_min > parsed)) ? parsed : pt_min
+							pt_max = ((pt_max == null) || (pt_max < parsed)) ? parsed : pt_max
+						}
+					}
+					newPoint.x_min = pt_min
+					newPoint.x_max = pt_max
+				} else {
+					newPoint.x = new Date(Date.parse(point[0]))
+					newPoint.x_min = newPoint.x
+					newPoint.x_max = newPoint.x
+					if (isNaN(newPoint.x)) {
+						errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing date as x-coordinate).")
+					}
 				}
 			} else {
-				newPoint.x = parseFloat(point[0])
-				if (isNaN(newPoint.x) || (!isFinite(newPoint.x))) {
-					errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing x-coordinate).")
+				if( Object.prototype.toString.call( point[0] ) === '[object Array]' ) {
+					pt_arr = point[0]
+					pt_min = null
+					pt_max = null
+					newPoint.x_dim = pt_arr.length
+					for (var k = 0; k < pt_arr.length; k++) {
+						parsed = parseFloat(pt_arr[k])
+						newPoint['x' + k] = parsed
+						newPoint.x = parsed
+						if (isNaN(parsed) || (!isFinite(parsed))) {
+							errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing data for x-coordinate.")
+						} else {
+							pt_min = ((pt_min == null) || (pt_min > parsed)) ? parsed : pt_min
+							pt_max = ((pt_max == null) || (pt_max < parsed)) ? parsed : pt_max
+						}
+					}
+					newPoint.x_min = pt_min
+					newPoint.x_max = pt_max
+				} else {
+					newPoint.x = parseFloat(point[0])
+					newPoint.x_min = newPoint.x
+					newPoint.x_max = newPoint.x
+					if (isNaN(newPoint.x) || (!isFinite(newPoint.x))) {
+						errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing x-coordinate).")
+					}
 				}
 			}
-			data_description.x_min = data_description.x_min < newPoint.x ? data_description.x_min : newPoint.x
-			data_description.x_max = data_description.x_max > newPoint.x ? data_description.x_max : newPoint.x
+			if (newPoint.x_dim < 1) {
+				errors.push("No lead point in series \"" + ds.series_name + "\" at index " + i + " (error parsing x-coordinate).")
+			}
+			data_description.x_min = data_description.x_min < newPoint.x_min ? data_description.x_min : newPoint.x_min
+			data_description.x_max = data_description.x_max > newPoint.x_max ? data_description.x_max : newPoint.x_max
 
+			// Parse y-axis data
+			newPoint.y_dim = 1
 			if (hasDateYAxis) {
-				newPoint.y = new Date(Date.parse(point[1]))
-				if (isNaN(newPoint.y)) {
-					errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing date as y-coordinate).")
+				if( Object.prototype.toString.call( point[1] ) === '[object Array]' ) {
+					pt_arr = point[1]
+					pt_min = null
+					pt_max = null
+					newPoint.y_dim = pt_arr.length
+					for (var k = 0; k < pt_arr.length; k++) {
+						parsed = new Date(Date.parse(pt_arr[k]))
+						newPoint['y' + k] = parsed
+						newPoint.y = parsed
+
+						if (isNaN(parsed)) {
+							errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing date data for y-coordinate.")
+						} else {
+							pt_min = ((pt_min == null) || (pt_min > parsed)) ? parsed : pt_min
+							pt_max = ((pt_max == null) || (pt_max < parsed)) ? parsed : pt_max
+						}
+					}
+					newPoint.y_min = pt_min
+					newPoint.y_max = pt_max
+				} else {
+					newPoint.y = new Date(Date.parse(point[1]))
+					newPoint.y_min = newPoint.y
+					newPoint.y_max = newPoint.y
+					if (isNaN(newPoint.y)) {
+						errors.push("Invalid (lead) point in series \"" + ds.series_name + "\" at index " + i + " (error parsing date as y-coordinate).")
+					}
 				}
 			} else {
-				newPoint.y = parseFloat(point[1])
-				if (isNaN(newPoint.y) || (!isFinite(newPoint.y))) {
-					errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing y-coordinate).")
+				if( Object.prototype.toString.call( point[1] ) === '[object Array]' ) {
+					pt_arr = point[1]
+					pt_min = null
+					pt_max = null
+					newPoint.y_dim = pt_arr.length
+					for (var k = 0; k < pt_arr.length; k++) {
+						parsed = parseFloat(pt_arr[k])
+						newPoint['y' + k] = parsed
+						newPoint.y = parsed
+						if (isNaN(parsed) || (!isFinite(parsed))) {
+							errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing data for y-coordinate.")
+						} else {
+							pt_min = ((pt_min == null) || (pt_min > parsed)) ? parsed : pt_min
+							pt_max = ((pt_max == null) || (pt_max < parsed)) ? parsed : pt_max
+						}
+					}
+					newPoint.y_min = pt_min
+					newPoint.y_max = pt_max
+				} else {
+					newPoint.y = parseFloat(point[1])
+					newPoint.y_min = newPoint.y
+					newPoint.y_max = newPoint.y
+					if (isNaN(newPoint.y) || (!isFinite(newPoint.y))) {
+						errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (error parsing y-coordinate).")
+					}
 				}
 			}
-			data_description.y_min = data_description.y_min < newPoint.y ? data_description.y_min : newPoint.y
-			data_description.y_max = data_description.y_max > newPoint.y ? data_description.y_max : newPoint.y
+			if (newPoint.y_dim < 1) {
+				errors.push("No lead point in series \"" + ds.series_name + "\" at index " + i + " (error parsing y-coordinate).")
+			}
+			data_description.y_min = data_description.y_min < newPoint.y_min ? data_description.y_min : newPoint.y_min
+			data_description.y_max = data_description.y_max > newPoint.y_max ? data_description.y_max : newPoint.y_max
+
 
 			if (data_dimension == 3) {
 				newPoint.z = parseFloat(point[2])
@@ -613,7 +779,26 @@ var jsonToD3 = {
 				}
 			}
 
-			newPoint.id = point[data_dimension].toString()
+			if (ds.use_bars) {
+				if (newPoint.x_dim < 2) {
+					errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (x-coordinates should give base of bar).")
+				}
+				if (newPoint.y_dim < 2) {
+					if ((newPoint.y_dim == 1) && (axes_info.y_min != null)) {
+						newPoint.y0 = axes_info.x_min
+						newPoint.y1 = newPoint.y
+					} else {
+						errors.push("Invalid point in series \"" + ds.series_name + "\" at index " + i + " (x-coordinates should give base of bar).")
+					}
+				}
+
+			    newPoint.bar_opacity = ds.bar_opacity
+			    newPoint.bar_border_color = ds.bar_border_color
+			    newPoint.bar_border_thickness = ds.bar_border_thickness
+			}
+
+			newPoint.id = (point[data_dimension] != null) ? point[data_dimension].toString() : ""
+			newPoint.display_value = (point[data_dimension+1] != null) ? point[data_dimension+1].toString() : null
 			newPoint.series_name = ds.series_name
 
 			data[i] = newPoint
@@ -642,6 +827,7 @@ var jsonToD3 = {
 
 		var all_data_markers = []
 		var all_data_lines = []
+		var all_data_rects = []
 
 		for (var i = 0; i < chart_info.data_series.length; i++) {
 			var ds = chart_info.data_series[i]
@@ -653,7 +839,7 @@ var jsonToD3 = {
 			if (ds.data == null) { errors.push("Error: data not defined in series \"" + ds.series_name + "\".") }
 			if (ds.data.length == null) { errors.push("Invalid data in series \"" + ds.series_name + "\".") }
 
-			var data_description = jsonToD3.checkAndParsePointsAndLabel(ds, chart_info.plot_type, chart_info.axes.has_datetime_x_axis, chart_info.axes.has_datetime_y_axis)
+			var data_description = jsonToD3.checkAndParsePointsAndLabel(ds, chart_info.plot_type, chart_info.axes)
 			if (data_description != null) {
 				ds.data_description = data_description
 			} else {
@@ -697,18 +883,28 @@ var jsonToD3 = {
 			var points = ds.data
 			for (var j = 0; j < points.length; j++) {
 				if (ds.use_markers && ((chart_info.plot_type == "BUBBLEPLOT") || (points[j].marker_radius > 0))) {
+					// Prepare Markers for D3
 					all_data_markers.push(points[j])
 				}
 			}
 			if (ds.draw_line) {
 				for (var j = 0; j < points.length; j++) {
+					// Prepare Lines for D3
 					all_data_lines.push(points[j])
+				}
+			}
+			if (ds.use_bars) {
+				for (var j = 0; j < points.length; j++) {
+					// Data for Bars
+					points[j].isRect = true
+					all_data_rects.push(points[j])
 				}
 			}
 		}
 
 		chart_info.all_data_markers = all_data_markers
 		chart_info.all_data_lines = all_data_lines
+		chart_info.all_data_rects = all_data_rects
 		chart_info.chart_data_description = chart_data_description
 
 		if (errors.length == 0) {
@@ -745,6 +941,7 @@ var jsonToD3 = {
 
 			var data_markers = chart_info.all_data_markers
 			var data_lines = chart_info.all_data_lines
+			var data_rects = chart_info.all_data_rects
 
 			var unique_tag = "JSON_TO_D3_CHARTAREA" + (++jsonToD3.plotIdx).toString()
 			while (document.getElementById(unique_tag) != null) {
@@ -815,38 +1012,60 @@ var jsonToD3 = {
 
 			var toggleFadeSeries = function(d) {
 				var key = getSeriesKey(d)
-				showOrHideSeries(d, !jsonToD3.activeSeriesInCharts[key]['active'])
-				fadeToolTip()
+
+				if (jsonToD3.activeSeriesInCharts[key]['toggleable']) {
+					showOrHideSeries(d, !jsonToD3.activeSeriesInCharts[key]['active'])
+					fadeToolTip()
+				}
 			}
 			managementFunctions["toggleFadeSeries"] = toggleFadeSeries
 
 			var fadeOtherSeriesShowThisOnly = function(d) {
-				for (var i = 0; i < chart_info.data_series.length; i++) {
-					var other_d = chart_info.data_series[i].series_name
-					showOrHideSeries(other_d, (other_d == d))
+				var key = getSeriesKey(d)
+				if (jsonToD3.activeSeriesInCharts[key]['toggleable']) {
+					for (var i = 0; i < chart_info.data_series.length; i++) {
+						var other_d = chart_info.data_series[i].series_name
+
+						if (jsonToD3.activeSeriesInCharts[getSeriesKey(other_d)]['toggleable']) {
+							showOrHideSeries(other_d, (other_d == d))
+						}
+					}
+					fadeToolTip()
 				}
-				fadeToolTip()
 			}
 			managementFunctions["fadeOtherSeriesShowThisOnly"] = fadeOtherSeriesShowThisOnly
 
 			showAllSeries = function() {
 				for (var i = 0; i < chart_info.data_series.length; i++) {
-					showOrHideSeries(chart_info.data_series[i].series_name, true)
+					if (chart_info.data_series[i].toggleable) {
+						showOrHideSeries(chart_info.data_series[i].series_name, true)
+					}
 				}
 				fadeToolTip()
 			}
 			managementFunctions["showAllSeries"] = showAllSeries
 
-			var markerMouseOver = function(d) {
+			var markerOrBarMouseOver = function(d) {
 				var key = getSeriesKey(cValue(d))
 				var isActive = jsonToD3.activeSeriesInCharts[key]['active']
 				if (!isActive) { return }
 
+				var pprintPoint = function(d) {
+					if (d.display_value != null) {
+						return d.display_value
+					}
+					if (d.isRect == null) {
+						return "(" + xValueTT(d.x) + ", " + yValueTT(d.y) + ")";
+					} else {
+						return yValueTT(Math.abs(d.y1 - d.y0));
+					}
+				}
+
 				var tooltip_text = ""
 				if (d.id == "") {
-					tooltip_text = "<div>(" + xValueTT(d) + ", " + yValueTT(d) + ")" + "<br/><em>" + cValue(d) + "</em></div>"
+					tooltip_text = "<div>" + pprintPoint(d) + "<br/><em>" + cValue(d) + "</em></div>"
 				} else {
-					tooltip_text = "<div><b>" + d.id + "</b><br/>(" + xValueTT(d) + ", " + yValueTT(d) + ")" + "<br/><em>" + cValue(d) + "</em></div>"
+					tooltip_text = "<div><b>" + d.id + "</b><br/>" + pprintPoint(d) + "<br/><em>" + cValue(d) + "</em></div>"
 				}
 
 				sneakyDiv.setAttribute("style", "position: absolute; visibility: hidden; height: auto; width: auto; font: " + chart_info.tooltip_font + "; padding: " + tooltip_padding + "px;")
@@ -929,14 +1148,14 @@ var jsonToD3 = {
 
 			// Setup x
 			var xValue = function(d) { return d.x }
-			var xValueTT = function(d) {
+			var xValueTT = function(x_value) {
 				if (chart_info.axes.has_datetime_x_axis && (chart_info.axes.x_axis_format != "")) {
-					return d3.time.format(chart_info.axes.x_axis_format)(d.x)
+					return d3.time.format(chart_info.axes.x_axis_format)(x_value)
 				} else {
 					if (chart_info.axes.x_axis_format != "") {
-						return d3.format(chart_info.axes.x_axis_format)(d.x)
+						return d3.format(chart_info.axes.x_axis_format)(x_value)
 					} else {
-						return d.x
+						return x_value
 					}
 				}
 			}
@@ -963,14 +1182,14 @@ var jsonToD3 = {
 
 			// Setup y
 			var yValue = function(d) { return d.y }
-			var yValueTT = function(d) {
+			var yValueTT = function(y_value) {
 				if (chart_info.axes.has_datetime_y_axis && (chart_info.axes.y_axis_format != "")) {
-					return d3.time.format(chart_info.axes.y_axis_format)(d.y)
+					return d3.time.format(chart_info.axes.y_axis_format)(y_value)
 				} else {
 					if (chart_info.axes.y_axis_format != "") {
-						return d3.format(chart_info.axes.y_axis_format)(d.y)
+						return d3.format(chart_info.axes.y_axis_format)(y_value)
 					} else {
-						return d.y
+						return y_value
 					}
 				}
 			}
@@ -1122,6 +1341,48 @@ var jsonToD3 = {
 		    	color(chart_info.data_series[i].series_name)
 		    }
 
+			// draw bars
+			var BAR_BORDER_SHIFT_MUL = 1.0/2
+			var xBarOrg_ = function(d) { return xScale(Math.min(d.x0, d.x1)) + d.bar_border_thickness*BAR_BORDER_SHIFT_MUL;}
+			var yBarOrg_ = function(d) { return yScale(Math.min(d.y0, d.y1)) - d.bar_border_thickness*BAR_BORDER_SHIFT_MUL;}
+			var xBarEnd_ = function(d) { return xScale(Math.max(d.x0, d.x1)) - d.bar_border_thickness*BAR_BORDER_SHIFT_MUL;}
+			var yBarEnd_ = function(d) { return yScale(Math.max(d.y0, d.y1)) + d.bar_border_thickness*BAR_BORDER_SHIFT_MUL;}
+			var xBarLen_ = function(d) { return xBarEnd_(d) - xBarOrg_(d);}
+			var yBarLen_ = function(d) { return -(yBarEnd_(d) - yBarOrg_(d));}
+
+			var xBarOrg__ = function(d) { return xScale(Math.min(d.x0, d.x1));}
+			var yBarOrg__ = function(d) { return yScale(Math.min(d.y0, d.y1));}
+			var xBarEnd__ = function(d) { return xScale(Math.max(d.x0, d.x1));}
+			var yBarEnd__ = function(d) { return yScale(Math.max(d.y0, d.y1));}
+			var xBarLen__ = function(d) { return xBarEnd__(d) - xBarOrg__(d);}
+			var yBarLen__ = function(d) { return -(yBarEnd__(d) - yBarOrg__(d));}
+
+			var xBarOrg = function(d) { return xBarLen_(d) >= 0 ? xBarOrg_(d) : xBarOrg__(d)}
+			var yBarOrg = function(d) { return yBarLen_(d) >= 0 ? yBarOrg_(d) : yBarOrg__(d)}
+			var xBarEnd = function(d) { return xBarLen_(d) >= 0 ? xBarEnd_(d) : xBarEnd__(d)}
+			var yBarEnd = function(d) { return yBarLen_(d) >= 0 ? yBarEnd_(d) : yBarEnd__(d)}
+			var xBarLen = function(d) { return xBarLen_(d) >= 0 ? xBarLen_(d) : xBarLen__(d)}
+			var yBarLen = function(d) { return yBarLen_(d) >= 0 ? yBarLen_(d) : yBarLen__(d)}
+
+			svg.selectAll(".bar")
+				.data(data_rects)
+				.enter().append("g")
+				.append("rect")
+				.attr("class", "bar")
+				.attr("x", xBarOrg)
+				.attr("y", yBarEnd)
+				.attr("width", xBarLen)
+				.attr("height", yBarLen)
+				.style("fill", function(d) {return color(cValue(d))})
+				.style("stroke", function(d) {return d.bar_border_color})
+				.style("stroke-width", function(d) {return d.bar_border_thickness})
+				.style("opacity", function(d) {return d.bar_opacity})
+				.style("cursor", "crosshair")
+				.attr("id", function(d) {return jsonToD3.get_node_tag(unique_tag, d.series_name)}) // assign ID
+				.on("mouseover", markerOrBarMouseOver)
+				.on("mousemove", moveTooltipOnMouseMove)
+				.on("mouseout", fadeToolTip)
+
 			// draw lines
 		    for (var i = 0; i < chart_info.data_series.length; i++) {
 		    	var ds = chart_info.data_series[i]
@@ -1155,7 +1416,7 @@ var jsonToD3 = {
 					.style("stroke", function(d) {return d.marker_border_color})
 					.style("fill", function(d) {return color(cValue(d))})
 					.style("cursor", "crosshair")
-					.on("mouseover", markerMouseOver)
+					.on("mouseover", markerOrBarMouseOver)
 					.on("mousemove", moveTooltipOnMouseMove)
 					.on("mouseout", fadeToolTip)
 
@@ -1164,11 +1425,15 @@ var jsonToD3 = {
 				var key = getSeriesKey(ds.series_name)
 				jsonToD3.activeSeriesInCharts[key] = {}
 				jsonToD3.activeSeriesInCharts[key]['active'] = true
+				jsonToD3.activeSeriesInCharts[key]['toggleable'] = ds.toggleable
 				jsonToD3.activeSeriesInCharts[key]['org_opacity'] = {}
 				jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_node_tag(unique_tag, ds.series_name)] = ds.marker_opacity
 				jsonToD3.activeSeriesInCharts[key]['org_opacity'][jsonToD3.get_path_tag(unique_tag, ds.series_name)] = ds.line_opacity
 			}
 
+
+
+			// create legend
 			if (chart_info.show_legend) {
 				var legend_shift_x = chart_info.legend_offset_x
 				var legend_shift_y = chart_info.legend_offset_y
@@ -1188,8 +1453,11 @@ var jsonToD3 = {
 					var key = getSeriesKey(d)
 					var isActive = jsonToD3.activeSeriesInCharts[key]['active']
 
-					var tooltip_text = "<b>" + d + "</b><br/>" + (isActive ? "(Click to hide)" : "(Click to show)")
-					tooltip_text += "<br/>(Right click to show only this.)"
+					var tooltip_text = "<b>" + d + "</b>"
+					if (jsonToD3.activeSeriesInCharts[key]['toggleable']) {
+						tooltip_text += "<br/>" + (isActive ? "(Click to hide)" : "(Click to show)")
+						tooltip_text += "<br/>(Right click to show only this.)"
+					}
 					if (title != null) {
 						tooltip_text += "<br/>(Click the title to show all series.)"
 					}
@@ -1461,7 +1729,9 @@ var jsonToD3 = {
 					if (render_text_class == null) { render_text_class = "" } else { render_text_class = render_text_class.trim() }
 					if (render_text_style == null) { render_text_style = "" } else { render_text_style = render_text_style.trim() }
 
-					// console.log("JSON To D3: Successful render.", plotTag, chartCanvas)
+					if (jsonToD3.DEVELOPMENT) {
+						console.log("JSON To D3: Successful render.", plotTag, chartCanvas)
+					}
 					if (render_text != "") {
 						caption_div = document.createElement("div")
 						if (render_text_style != "") { caption_div.setAttribute("style", render_text_style) }
