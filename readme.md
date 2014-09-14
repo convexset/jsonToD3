@@ -44,13 +44,17 @@ An example MathJax configuration that works:
       processEscapes: true
     },
     "messageStyle" : "none",
-    "HTML-CSS": { availableFonts: ["TeX"] },
-    "delayStartupUntil" : "configured"
+    "HTML-CSS": { availableFonts: ["TeX"] }
   });
 
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?delayStartupUntil=configured"></script>
+
+<script type="text/javascript">
   // Call MathJax.Hub.Configured() when ready to have MathJax start up.
   //    This is important for inline chart descriptions with LaTeX
   //    mark up. (Otherwise MathJax makes the JSON unparseable.)
+  MathJax.Hub.Configured()
 </script>
 ```
 
